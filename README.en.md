@@ -1548,3 +1548,386 @@ protected function title(): Attribute
 They help keep attribute transformation logic centralized and consistent.
 
 </details>
+
+<details>
+<summary>41. What are casts in Eloquent?</summary>
+
+#### Laravel
+
+Casts define how Eloquent converts model attributes between raw database values and PHP types.
+
+1. **What casts do**
+
+- Convert values on read/write automatically.
+- Keep attribute handling consistent and type-safe.
+
+2. **Common cast types**
+
+- `integer`, `float`, `decimal:2`, `boolean`
+- `datetime`, `immutable_datetime`
+- `array`, `json`, `object`, `collection`
+- `encrypted`, `hashed`
+
+3. **Example**
+
+```php
+protected function casts(): array
+{
+    return [
+        'is_active' => 'boolean',
+        'price' => 'decimal:2',
+        'meta' => 'array',
+        'published_at' => 'datetime',
+    ];
+}
+```
+
+4. **Why it matters**
+
+- Reduces manual parsing/formatting code.
+- Prevents subtle type bugs.
+- Improves readability of domain code.
+
+Casts are a foundational feature for clean model attribute management.
+
+</details>
+
+<details>
+<summary>42. What are Attribute objects in modern Laravel?</summary>
+
+#### Laravel
+
+`Attribute` objects are the modern way to define accessors and mutators in one place for a model field.
+
+1. **Core idea**
+
+- A method returns `Attribute::make(get: ..., set: ...)`.
+- Encapsulates read/write transformations clearly.
+
+2. **Example**
+
+```php
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
+protected function name(): Attribute
+{
+    return Attribute::make(
+        get: fn (string $value) => ucwords($value),
+        set: fn (string $value) => strtolower(trim($value)),
+    );
+}
+```
+
+3. **Benefits**
+
+- Cleaner than legacy `getXxxAttribute` / `setXxxAttribute` methods.
+- Groups getter/setter behavior in one method.
+- Easier to read, test, and maintain.
+
+4. **When to use**
+
+- Custom formatting, normalization, encryption logic, or value-object mapping on specific attributes.
+
+Attribute objects are the preferred modern accessor/mutator pattern in current Laravel versions.
+
+</details>
+
+<details>
+<summary>43. What are Eloquent Collections?</summary>
+
+#### Laravel
+
+Eloquent Collections are specialized collection objects returned by Eloquent queries, extending Laravel’s base `Collection` with model-aware behavior.
+
+1. **What they are**
+
+- Returned by methods like `get()` and relationship loads.
+- Contain model instances, not plain arrays.
+
+2. **Extra capabilities**
+
+- Inherits rich collection API (`map`, `filter`, `groupBy`, `pluck`, etc.).
+- Adds Eloquent-specific helpers like `load()`, `loadMissing()`, `modelKeys()`, `fresh()`.
+
+3. **Example**
+
+```php
+$users = User::where('is_active', true)->get(); // Eloquent Collection
+$emails = $users->pluck('email');
+```
+
+4. **Why useful**
+
+- Expressive post-query transformations.
+- Convenient bulk operations on model sets.
+
+Eloquent Collections combine ORM awareness with functional-style data operations.
+
+</details>
+
+<details>
+<summary>44. What is the difference between arrays and collections?</summary>
+
+#### Laravel
+
+Arrays are native PHP data structures, while Collections are object wrappers with a fluent API for transformations.
+
+1. **Arrays**
+
+- Fast native structure.
+- Access via language syntax.
+- Fewer high-level transformation helpers by default.
+
+2. **Collections**
+
+- `Illuminate\Support\Collection` object.
+- Chainable methods: `map`, `filter`, `reduce`, `sortBy`, `groupBy`, etc.
+- More expressive and readable for complex data pipelines.
+
+3. **Example**
+
+```php
+$names = collect($users)
+    ->filter(fn ($u) => $u->is_active)
+    ->pluck('name')
+    ->values();
+```
+
+4. **When to use which**
+
+- Use arrays for simple, low-level operations.
+- Use collections for readability and composable transformations.
+
+Collections trade small overhead for much better ergonomics in application code.
+
+</details>
+
+<details>
+<summary>45. What are Lazy Collections?</summary>
+
+#### Laravel
+
+Lazy Collections process items as a stream (generator-based) instead of loading all items into memory at once.
+
+1. **Core property**
+
+- Memory-efficient iteration over very large datasets.
+
+2. **How they work**
+
+- Items are generated and processed one by one.
+- Transformation chain executes lazily during iteration.
+
+3. **Typical sources**
+
+- `lazy()` queries.
+- `cursor()` from Eloquent/query builder.
+- Custom generators wrapped in `LazyCollection`.
+
+4. **When to use**
+
+- Data migration scripts.
+- Large exports/imports.
+- Background jobs over millions of rows.
+
+5. **Tradeoff**
+
+- Some collection operations requiring full materialization are less suitable.
+
+Lazy Collections are ideal when memory safety matters more than random-access convenience.
+
+</details>
+
+<details>
+<summary>46. What is the purpose of the cursor() method?</summary>
+
+#### Laravel
+
+`cursor()` returns a lazy iterable of results, letting you loop through records one at a time with low memory usage.
+
+1. **Why use it**
+
+- Avoid loading full result set into RAM.
+- Process large tables efficiently.
+
+2. **Example**
+
+```php
+foreach (User::where('is_active', true)->cursor() as $user) {
+    // process user
+}
+```
+
+3. **Characteristics**
+
+- Generator-based iteration.
+- Good for read/process pipelines.
+- Works well with queues and long-running jobs.
+
+4. **When not ideal**
+
+- If you need random access to all results at once.
+- If you need heavy eager-loaded graph materialization for all records.
+
+`cursor()` is a key tool for scalable record-by-record processing.
+
+</details>
+
+<details>
+<summary>47. What is chunking and when should you use chunk() or lazy()?</summary>
+
+#### Laravel
+
+Chunking means processing query results in small batches instead of loading everything at once.
+
+1. **`chunk()`**
+
+- Fetches records in fixed-size batches and executes callback per chunk.
+
+```php
+User::query()->chunk(1000, function ($users) {
+    foreach ($users as $user) {
+        // process
+    }
+});
+```
+
+2. **`lazy()`**
+
+- Internally chunked, but exposed as a single lazy stream.
+- More composable for pipeline-style code.
+
+```php
+User::query()->lazy(1000)->each(function (User $user) {
+    // process
+});
+```
+
+3. **When to choose**
+
+- Use `chunk()` for explicit per-batch operations.
+- Use `lazy()` for fluent streaming transformations.
+
+4. **Important note**
+
+- When updating rows during iteration, prefer ID-based variants (`chunkById`, `lazyById`) to avoid skipping/duplicating rows.
+
+Chunking is essential for large dataset processing with controlled memory usage.
+
+</details>
+
+<details>
+<summary>48. Explain query builder in Laravel.</summary>
+
+#### Laravel
+
+Laravel Query Builder is a fluent SQL query construction API that works above PDO and below Eloquent models.
+
+1. **What it is**
+
+- Database-agnostic query interface via `DB::table(...)`.
+- Supports select, joins, where clauses, grouping, ordering, pagination, inserts/updates/deletes.
+
+2. **Example**
+
+```php
+$users = DB::table('users')
+    ->select('id', 'name', 'email')
+    ->where('is_active', true)
+    ->orderByDesc('created_at')
+    ->limit(20)
+    ->get();
+```
+
+3. **Why use it**
+
+- More control over SQL than high-level ORM patterns.
+- Great for reporting queries and complex joins.
+- Still supports binding and SQL injection-safe parameter handling.
+
+4. **Eloquent vs builder**
+
+- Eloquent: model-centric, rich domain features.
+- Query Builder: table/query-centric, lower-level and often leaner.
+
+Query Builder is the core fluent layer for precise SQL work in Laravel.
+
+</details>
+
+<details>
+<summary>49. How do you output raw SQL queries in Laravel?</summary>
+
+#### Laravel
+
+You can inspect SQL and bindings in several ways depending on debugging depth.
+
+1. **`toSql()` + `getBindings()`**
+
+```php
+$query = User::where('email', 'like', '%@example.com%');
+
+$sql = $query->toSql();
+$bindings = $query->getBindings();
+```
+
+2. **`toRawSql()` (modern Laravel)**
+
+- Returns SQL with bindings interpolated for easier reading.
+
+```php
+$sql = User::where('id', 5)->toRawSql();
+```
+
+3. **Query listener**
+
+```php
+DB::listen(function ($query) {
+    logger()->debug($query->sql, $query->bindings);
+});
+```
+
+4. **Tooling**
+
+- Laravel Telescope / Debugbar can show executed queries and timings.
+
+Use these methods in development/debugging, not as permanent production output.
+
+</details>
+
+<details>
+<summary>50. What aggregate methods are available in query builder?</summary>
+
+#### Laravel
+
+Laravel Query Builder provides standard SQL aggregate helpers.
+
+1. **Main aggregate methods**
+
+- `count()`
+- `sum($column)`
+- `avg($column)` / `average($column)`
+- `min($column)`
+- `max($column)`
+
+2. **Examples**
+
+```php
+$totalUsers = DB::table('users')->count();
+$totalRevenue = DB::table('orders')->sum('amount');
+$avgOrder = DB::table('orders')->avg('amount');
+$firstDate = DB::table('orders')->min('created_at');
+$latestDate = DB::table('orders')->max('created_at');
+```
+
+3. **With grouped queries**
+
+- Combine `selectRaw(...)` + `groupBy(...)` for per-group aggregates.
+
+4. **Why useful**
+
+- Efficient server-side calculations.
+- Avoid transferring unnecessary rows into application memory.
+
+Aggregates are essential for dashboards, analytics, and business metrics endpoints.
+
+</details>
