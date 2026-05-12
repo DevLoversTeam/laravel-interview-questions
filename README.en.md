@@ -1931,3 +1931,409 @@ $latestDate = DB::table('orders')->max('created_at');
 Aggregates are essential for dashboards, analytics, and business metrics endpoints.
 
 </details>
+
+<details>
+<summary>51. What are database transactions and how do you use them?</summary>
+
+#### Laravel
+
+A database transaction groups multiple operations into one atomic unit: either all succeed or all are rolled back.
+
+1. **Why transactions are needed**
+
+- Preserve data consistency across related writes.
+- Prevent partial updates when an exception occurs.
+
+2. **Laravel usage**
+
+```php
+DB::transaction(function () use ($orderData) {
+    $order = Order::create($orderData);
+    Inventory::reserveForOrder($order);
+    Payment::captureForOrder($order);
+});
+```
+
+3. **Manual control (optional)**
+
+```php
+DB::beginTransaction();
+
+try {
+    // operations
+    DB::commit();
+} catch (Throwable $e) {
+    DB::rollBack();
+    throw $e;
+}
+```
+
+4. **Best practices**
+
+- Keep transaction scope small and fast.
+- Avoid long external HTTP calls inside a transaction.
+- Combine with row locking when needed for concurrency-sensitive flows.
+
+Transactions are critical for reliable financial, inventory, and multi-step business workflows.
+
+</details>
+
+<details>
+<summary>52. What are migrations and why are they important?</summary>
+
+#### Laravel
+
+Migrations are version-controlled PHP files that define database schema changes over time.
+
+1. **What migrations do**
+
+- Create/modify/drop tables, columns, indexes, constraints.
+- Keep schema changes reproducible across environments.
+
+2. **Why they are important**
+
+- Team collaboration on schema with code review.
+- Deterministic deploys and rollbacks.
+- Infrastructure-as-code approach for database evolution.
+
+3. **Typical migration structure**
+
+- `up()` applies changes.
+- `down()` reverts changes.
+
+4. **Operational value**
+
+- Easier onboarding and CI setup.
+- Reduced “works on my machine” DB drift.
+
+Migrations are the foundation of maintainable schema lifecycle management in Laravel.
+
+</details>
+
+<details>
+<summary>53. How do you generate and rollback migrations?</summary>
+
+#### Laravel
+
+Laravel provides Artisan commands for creating and managing migration execution.
+
+1. **Generate migration**
+
+```bash
+php artisan make:migration create_orders_table
+php artisan make:migration add_status_to_orders_table --table=orders
+```
+
+2. **Run migrations**
+
+```bash
+php artisan migrate
+```
+
+3. **Rollback latest batch**
+
+```bash
+php artisan migrate:rollback
+```
+
+4. **Rollback multiple steps**
+
+```bash
+php artisan migrate:rollback --step=3
+```
+
+5. **Other useful commands**
+
+- `php artisan migrate:reset` (rollback all)
+- `php artisan migrate:refresh` (reset + migrate)
+- `php artisan migrate:fresh` (drop all tables + migrate)
+
+Use rollback/refresh commands carefully in production environments.
+
+</details>
+
+<details>
+<summary>54. What are seeders and factories?</summary>
+
+#### Laravel
+
+Seeders and factories help generate and insert test or initial data efficiently.
+
+1. **Seeders**
+
+- Classes that populate database with known datasets.
+- Good for baseline/reference data (roles, permissions, settings).
+
+2. **Factories**
+
+- Blueprints for generating model instances with fake or custom data.
+- Useful for tests and demo/dev data.
+
+3. **How they work together**
+
+- Seeder calls factories to create many records quickly.
+
+```php
+User::factory()->count(50)->create();
+```
+
+4. **Use cases**
+
+- Local development bootstrap.
+- Automated test setup.
+- Staging/demo environment generation.
+
+Seeders define what to insert; factories define how model data is generated.
+
+</details>
+
+<details>
+<summary>55. How do factories work in modern Laravel?</summary>
+
+#### Laravel
+
+Modern Laravel factories are class-based and model-centric, typically in `database/factories`.
+
+1. **Definition-based factory**
+
+- `definition()` returns default fake attributes.
+
+```php
+final class UserFactory extends Factory
+{
+    public function definition(): array
+    {
+        return [
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'password' => bcrypt('password'),
+        ];
+    }
+}
+```
+
+2. **States**
+
+- Named variants for specific scenarios.
+
+```php
+public function admin(): static
+{
+    return $this->state(fn () => ['is_admin' => true]);
+}
+```
+
+3. **Usage**
+
+```php
+User::factory()->admin()->count(3)->create();
+User::factory()->make(); // not persisted
+```
+
+4. **Relationships**
+
+- Factories support relation creation via `has()`, `for()`, and callbacks.
+
+Factories make test/data generation expressive, composable, and deterministic.
+
+</details>
+
+<details>
+<summary>56. What is database seeding?</summary>
+
+#### Laravel
+
+Database seeding is the process of inserting predefined or generated data into the database.
+
+1. **Purpose**
+
+- Prepare app with required initial data.
+- Provide realistic datasets for development/testing.
+
+2. **How it runs**
+
+- Seeder classes are executed via Artisan.
+
+```bash
+php artisan db:seed
+php artisan db:seed --class=UserSeeder
+```
+
+3. **Common flow**
+
+- `DatabaseSeeder` orchestrates other seeders.
+- Factories are used for bulk synthetic records.
+
+4. **Best practices**
+
+- Keep core reference data deterministic.
+- Avoid destructive seeding logic in production unless intentional.
+- Version seeders with codebase.
+
+Seeding ensures environments are reproducible and ready for development or tests.
+
+</details>
+
+<details>
+<summary>57. What are soft deletes?</summary>
+
+#### Laravel
+
+Soft deletes mark records as deleted without physically removing them from the table.
+
+1. **How it works**
+
+- Uses `deleted_at` timestamp column.
+- Deleting sets `deleted_at`; row stays in DB.
+- Default queries exclude soft-deleted rows.
+
+2. **Enable in model**
+
+```php
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Post extends Model
+{
+    use SoftDeletes;
+}
+```
+
+3. **Key query helpers**
+
+- `withTrashed()` include deleted rows.
+- `onlyTrashed()` only deleted rows.
+- `restore()` bring record back.
+- `forceDelete()` permanently remove.
+
+4. **Why useful**
+
+- Data recovery and audit friendliness.
+- Safer business workflows where accidental delete risk is high.
+
+Soft deletes are a practical compromise between delete semantics and recoverability.
+
+</details>
+
+<details>
+<summary>58. How do you optimize Eloquent queries for performance?</summary>
+
+#### Laravel
+
+Eloquent performance optimization is mostly about reducing query count, row size, and unnecessary model work.
+
+1. **Avoid N+1**
+
+- Use `with()` / `load()` for relations.
+
+2. **Select only needed columns**
+
+```php
+User::query()->select('id', 'name')->get();
+```
+
+3. **Use aggregates/existence checks in SQL**
+
+- `count`, `sum`, `exists`, `withCount` instead of loading full collections.
+
+4. **Process large datasets efficiently**
+
+- Use `chunkById`, `lazyById`, `cursor` for memory-safe iteration.
+
+5. **Index strategy**
+
+- Add proper DB indexes for frequent filters/sorts/joins.
+
+6. **Cache where appropriate**
+
+- Cache stable or expensive query results.
+
+7. **Measure and profile**
+
+- Use Telescope/Debugbar/query logs and DB `EXPLAIN` plans.
+
+8. **Use query builder/raw SQL for complex reporting paths**
+
+- Not every heavy query fits cleanly in high-level ORM patterns.
+
+Optimize by measuring first, then fixing the highest-impact hotspots.
+
+</details>
+
+<details>
+<summary>59. What are API Resources in Laravel?</summary>
+
+#### Laravel
+
+API Resources are transformation layers that convert models/collections into consistent JSON response structures.
+
+1. **What they do**
+
+- Control output shape.
+- Hide internal fields.
+- Format/compose related data predictably.
+
+2. **Example**
+
+```php
+final class UserResource extends JsonResource
+{
+    public function toArray($request): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+        ];
+    }
+}
+```
+
+3. **Usage**
+
+```php
+return new UserResource($user);
+return UserResource::collection($users);
+```
+
+4. **Why important**
+
+- Stable API contracts.
+- Separation between persistence model and transport format.
+- Easier API versioning and response policy control.
+
+API Resources are Laravel’s native, first-class way to standardize JSON API responses.
+
+</details>
+
+<details>
+<summary>60. What is the difference between API Resources and Transformers?</summary>
+
+#### Laravel
+
+Both shape output data, but “API Resources” is Laravel’s built-in standard, while “Transformers” usually refers to external/custom mapping layers.
+
+1. **API Resources (built-in)**
+
+- Native Laravel feature (`JsonResource`).
+- Tight framework integration and simple usage.
+- Good default for most Laravel APIs.
+
+2. **Transformers (generic pattern / packages)**
+
+- Architectural concept for mapping domain data to response DTOs.
+- Can be custom classes or package-based solutions (e.g., Fractal-style patterns).
+- Useful when teams need framework-agnostic or very customized transformation pipelines.
+
+3. **Practical difference**
+
+- Resource = official Laravel approach.
+- Transformer = broader pattern that may or may not use Laravel-native primitives.
+
+4. **Which to choose**
+
+- In Laravel-first apps, prefer API Resources by default.
+- Use custom transformer layer when domain/API boundaries require extra decoupling.
+
+Both solve representation concerns; choice depends on architectural complexity and portability needs.
+
+</details>
