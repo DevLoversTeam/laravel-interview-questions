@@ -2337,3 +2337,361 @@ Both shape output data, but “API Resources” is Laravel’s built-in standard
 Both solve representation concerns; choice depends on architectural complexity and portability needs.
 
 </details>
+
+<details>
+<summary>61. How does authentication work in Laravel?</summary>
+
+#### Laravel
+
+Authentication in Laravel verifies user identity and keeps that identity across requests using guards and providers.
+
+1. **Core building blocks**
+
+- **Guards** define how users are authenticated per request (session, token, etc.).
+- **Providers** define how users are retrieved (typically Eloquent model).
+
+2. **Session-based flow (web)**
+
+- User submits credentials.
+- Laravel validates credentials against provider.
+- On success, user ID is stored in session.
+- Subsequent requests resolve current user from session/cookie.
+
+3. **Token-based flow (API)**
+
+- Client sends token (e.g., Sanctum/Passport bearer token).
+- Guard validates token and resolves authenticated user.
+
+4. **Framework helpers**
+
+- `Auth::attempt()`, `Auth::user()`, `auth()->check()`.
+- Middleware like `auth` protects routes.
+
+5. **Best practice**
+
+- Use built-in auth scaffolding/packages for common flows.
+- Keep auth logic centralized and avoid custom crypto/session handling unless necessary.
+
+Laravel authentication is guard-driven and consistent across web and API entry points.
+
+</details>
+
+<details>
+<summary>62. What is the difference between authentication and authorization?</summary>
+
+#### Laravel
+
+Authentication and authorization are related but distinct security concerns.
+
+1. **Authentication**
+
+- Answers: “Who are you?”
+- Verifies identity (login/session/token).
+
+2. **Authorization**
+
+- Answers: “What are you allowed to do?”
+- Checks permissions/abilities on actions/resources.
+
+3. **Laravel mapping**
+
+- Authentication: guards, providers, `auth` middleware.
+- Authorization: gates, policies, `can` middleware, `@can` Blade directives.
+
+4. **Example**
+
+- User is authenticated (logged in) but may still be forbidden to delete another user’s post.
+
+Authentication establishes identity; authorization enforces access control rules.
+
+</details>
+
+<details>
+<summary>63. What are Gates and Policies?</summary>
+
+#### Laravel
+
+Gates and Policies are Laravel’s authorization mechanisms.
+
+1. **Gates**
+
+- Closure-based authorization rules.
+- Good for simple abilities not tightly tied to a model.
+
+2. **Policies**
+
+- Class-based authorization organized per model/resource.
+- Methods like `view`, `create`, `update`, `delete`, etc.
+
+3. **When to use which**
+
+- Use **Gates** for small/global checks.
+- Use **Policies** for model-centric authorization and larger apps.
+
+4. **Usage examples**
+
+- `Gate::allows('export-reports')`
+- `$this->authorize('update', $post)`
+
+Gates provide lightweight checks; Policies provide scalable, structured authorization.
+
+</details>
+
+<details>
+<summary>64. How do the @can and @cannot Blade directives work?</summary>
+
+#### Laravel
+
+`@can` and `@cannot` are Blade directives that conditionally render markup based on authorization checks.
+
+1. **`@can`**
+
+- Renders content if user is authorized for given ability.
+
+```blade
+@can('update', $post)
+    <a href="{{ route('posts.edit', $post) }}">Edit</a>
+@endcan
+```
+
+2. **`@cannot`**
+
+- Renders content if user is not authorized.
+
+```blade
+@cannot('delete', $post)
+    <span>You cannot delete this post.</span>
+@endcannot
+```
+
+3. **How they evaluate**
+
+- Internally call gate/policy authorization logic.
+- Use current authenticated user context.
+
+4. **Why useful**
+
+- Keep UI aligned with backend permission rules.
+- Avoid showing actions users cannot perform.
+
+These directives simplify permission-aware UI rendering in Blade templates.
+
+</details>
+
+<details>
+<summary>65. What is multi-authentication and how can you implement it?</summary>
+
+#### Laravel
+
+Multi-authentication means supporting multiple user types/guards in the same application (for example `web`, `admin`, `api`).
+
+1. **Typical scenarios**
+
+- Separate admin and customer portals.
+- Internal staff and external partner access.
+- Different auth strategies per channel.
+
+2. **How to implement**
+
+- Define multiple guards/providers in auth configuration.
+- Assign middleware with specific guard: `auth:admin`, `auth:web`, `auth:sanctum`.
+- Optionally use separate login flows/controllers/routes per guard.
+
+3. **Example route protection**
+
+```php
+Route::middleware('auth:admin')->group(function () {
+    Route::get('/admin/dashboard', AdminDashboardController::class);
+});
+```
+
+4. **Best practices**
+
+- Isolate guard-specific route groups and session flows.
+- Keep authorization rules explicit per user type.
+
+Multi-auth provides clean separation of identities and permissions across app domains.
+
+</details>
+
+<details>
+<summary>66. Compare Laravel Sanctum and Laravel Passport.</summary>
+
+#### Laravel
+
+Sanctum and Passport both provide API authentication but target different complexity levels.
+
+1. **Sanctum**
+
+- Lightweight token auth + SPA session authentication.
+- Personal access tokens and simple abilities.
+- Easy setup, minimal OAuth complexity.
+
+2. **Passport**
+
+- Full OAuth2 server implementation.
+- Supports authorization code, client credentials, password (legacy usage), refresh tokens, scopes.
+- Better for third-party delegated authorization scenarios.
+
+3. **Complexity tradeoff**
+
+- Sanctum: simpler and faster for first-party apps.
+- Passport: more powerful but heavier to configure/operate.
+
+4. **Typical fit**
+
+- Sanctum: SPA/mobile app + own backend.
+- Passport: ecosystem/platform APIs with external OAuth clients.
+
+Choose based on auth protocol requirements, not just package popularity.
+
+</details>
+
+<details>
+<summary>67. When would you choose Sanctum over Passport?</summary>
+
+#### Laravel
+
+Choose Sanctum when you need straightforward first-party authentication without full OAuth2 flows.
+
+1. **Good Sanctum cases**
+
+- SPA + Laravel backend using session/cookie auth.
+- Mobile or internal clients using personal access tokens.
+- Small/medium APIs where OAuth2 delegation is unnecessary.
+
+2. **Why Sanctum**
+
+- Faster implementation.
+- Lower operational complexity.
+- Fewer moving parts for token management.
+
+3. **When not enough**
+
+- Third-party apps need delegated user authorization.
+- You require full OAuth2 grant flows and standards-level auth server capabilities.
+
+4. **Decision rule**
+
+- Default to Sanctum for first-party apps.
+- Move to Passport only when OAuth2 requirements are explicit.
+
+Sanctum is the pragmatic default for most Laravel product APIs.
+
+</details>
+
+<details>
+<summary>68. How does Laravel protect against SQL Injection?</summary>
+
+#### Laravel
+
+Laravel reduces SQL injection risk by using parameter binding and safe query abstractions by default.
+
+1. **Prepared statements/bindings**
+
+- Query Builder and Eloquent use bound parameters instead of string-concatenated SQL.
+
+2. **Safe examples**
+
+```php
+User::where('email', $email)->first();
+DB::table('orders')->where('status', $status)->get();
+```
+
+3. **Where risk remains**
+
+- Unsafe raw SQL string concatenation.
+
+```php
+// risky if $input is untrusted
+DB::select("SELECT * FROM users WHERE email = '$input'");
+```
+
+4. **Safe raw SQL usage**
+
+- Use placeholders and bindings:
+
+```php
+DB::select('SELECT * FROM users WHERE email = ?', [$input]);
+```
+
+5. **Best practices**
+
+- Prefer Eloquent/Query Builder.
+- Validate input and avoid manual SQL composition from untrusted values.
+
+Laravel is secure by default here, but raw SQL misuse can still reintroduce injection risk.
+
+</details>
+
+<details>
+<summary>69. How does Laravel protect against CSRF attacks?</summary>
+
+#### Laravel
+
+Laravel protects against CSRF by requiring a valid CSRF token for state-changing web requests.
+
+1. **How it works**
+
+- A per-session token is generated and stored server-side.
+- Forms include the token (`@csrf`).
+- Middleware verifies token on incoming POST/PUT/PATCH/DELETE requests.
+
+2. **Blade usage**
+
+```blade
+<form method="POST" action="/profile">
+    @csrf
+    <!-- fields -->
+</form>
+```
+
+3. **AJAX/SPAs**
+
+- Token can be sent via header (e.g., `X-CSRF-TOKEN`) for same-site session flows.
+
+4. **Why effective**
+
+- Attackers cannot forge valid session-bound token from another site context.
+
+5. **Scope note**
+
+- CSRF primarily applies to cookie/session-authenticated browser requests, not typical stateless bearer-token APIs.
+
+CSRF middleware is a core default web security layer in Laravel.
+
+</details>
+
+<details>
+<summary>70. How does Laravel protect against XSS attacks?</summary>
+
+#### Laravel
+
+Laravel helps prevent XSS mainly through output escaping and secure templating defaults.
+
+1. **Blade escaping by default**
+
+- `{{ $value }}` is HTML-escaped automatically.
+- Prevents untrusted HTML/JS from being rendered/executed.
+
+2. **Unescaped output caution**
+
+- `{!! $value !!}` renders raw HTML and should be used only with trusted/sanitized content.
+
+3. **Additional protections**
+
+- Input validation and normalization reduce unsafe payload propagation.
+- CSP/security headers (via middleware/server config) add defense-in-depth.
+
+4. **Frontend/API considerations**
+
+- Returning JSON is safer than rendering raw HTML snippets.
+- Client-side rendering must also escape untrusted content.
+
+5. **Best practice**
+
+- Escape by default, sanitize when HTML is required, and minimize raw rendering paths.
+
+Laravel provides strong defaults, but secure output handling in app code remains essential.
+
+</details>
