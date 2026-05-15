@@ -2896,3 +2896,348 @@ Encrypted cookies and signed cookies both protect cookie integrity, but encrypti
 In practice, encrypted cookies are usually the safer default for Laravel web applications.
 
 </details>
+
+<details>
+<summary>76. Explain the Laravel Queue system.</summary>
+
+#### Laravel
+
+Laravel Queue system moves time-consuming tasks out of the HTTP request cycle into asynchronous background processing.
+
+1. **Why queues are used**
+
+- Faster user responses.
+- Better scalability under load.
+- Reliable execution for retries and failure handling.
+
+2. **How it works**
+
+- Application dispatches a job to a queue backend.
+- Queue worker process consumes jobs and executes them.
+- Failed jobs can be retried or moved to failed storage.
+
+3. **Typical queued tasks**
+
+- Emails, notifications, report generation.
+- API integrations and webhooks.
+- Image/video processing and heavy imports/exports.
+
+4. **Core ecosystem tools**
+
+- `queue:work` workers.
+- `failed_jobs` tracking.
+- Horizon (for Redis queues) for monitoring and control.
+
+Queue architecture is essential for responsive and resilient Laravel applications.
+
+</details>
+
+<details>
+<summary>77. What are jobs and queue workers?</summary>
+
+#### Laravel
+
+Jobs and workers are the core producer-consumer components of Laravel asynchronous processing.
+
+1. **Jobs**
+
+- Encapsulated task classes (usually in `app/Jobs`).
+- Represent a unit of work to execute now or later.
+- Often implement `ShouldQueue` for async execution.
+
+2. **Queue workers**
+
+- Long-running processes executing queued jobs.
+- Started via Artisan (`php artisan queue:work`).
+- Support options for retries, timeout, sleep, queue selection.
+
+3. **Flow**
+
+- Code dispatches job (`dispatch(...)`).
+- Job payload is pushed to selected queue backend.
+- Worker pops job and runs `handle()`.
+
+4. **Operational note**
+
+- Workers are usually managed by a process manager (Supervisor/systemd) in production.
+
+Jobs define work; workers execute work continuously in background.
+
+</details>
+
+<details>
+<summary>78. What queue drivers are available in Laravel?</summary>
+
+#### Laravel
+
+Laravel supports multiple queue backends through configurable drivers.
+
+1. **Common built-in drivers**
+
+- `sync`
+- `database`
+- `redis`
+- `sqs` (Amazon SQS)
+- `null`
+
+2. **General characteristics**
+
+- `sync`: immediate execution in current request.
+- `database`: stores jobs in DB tables.
+- `redis`: fast in-memory queue backend.
+- `sqs`: managed cloud queue service.
+- `null`: discards jobs (useful for some local/testing scenarios).
+
+3. **Configuration**
+
+- Defined in `config/queue.php` and environment variables.
+
+Choose driver based on reliability, throughput, infrastructure, and operational ownership needs.
+
+</details>
+
+<details>
+<summary>79. What is the difference between sync, database, Redis, and SQS queue drivers?</summary>
+
+#### Laravel
+
+These drivers differ in execution model, performance, reliability characteristics, and operations.
+
+1. **`sync`**
+
+- Executes job immediately during request.
+- No background worker required.
+- Good for local dev/simple flows, not for heavy async production workloads.
+
+2. **`database`**
+
+- Persists jobs in relational DB table.
+- Easy to set up, durable, but slower under high queue throughput.
+
+3. **`redis`**
+
+- In-memory, high-performance queue backend.
+- Excellent for high throughput/low latency workloads.
+- Often paired with Horizon for monitoring.
+
+4. **`sqs`**
+
+- Fully managed AWS queue service.
+- Highly scalable and durable.
+- Good for distributed/cloud-native architectures; introduces cloud latency/cost considerations.
+
+5. **Practical selection**
+
+- Small/simple: `database`.
+- High-throughput app stack with Redis: `redis`.
+- AWS-native distributed systems: `sqs`.
+- Local or forced inline execution: `sync`.
+
+Driver choice should match traffic profile and infrastructure strategy.
+
+</details>
+
+<details>
+<summary>80. How do you handle failed jobs?</summary>
+
+#### Laravel
+
+Laravel provides built-in mechanisms to record, inspect, retry, and clean up failed queued jobs.
+
+1. **Failure recording**
+
+- Configure failed job storage (commonly `failed_jobs` table).
+- Exceptions during job execution mark job as failed after retry limit.
+
+2. **Retry behavior**
+
+- Control retries using job properties/options (`tries`, backoff strategies).
+
+3. **Useful commands**
+
+```bash
+php artisan queue:failed
+php artisan queue:retry all
+php artisan queue:forget <id>
+php artisan queue:flush
+```
+
+4. **Job-level handling**
+
+- Implement `failed(Throwable $e)` method for cleanup/alerts/compensation logic.
+
+5. **Best practices**
+
+- Make jobs idempotent.
+- Add structured logging and alerting.
+- Separate transient vs permanent failure handling.
+
+Robust failed-job handling is critical for reliable asynchronous systems.
+
+</details>
+
+<details>
+<summary>81. What is job batching?</summary>
+
+#### Laravel
+
+Job batching groups multiple jobs into one tracked batch with shared lifecycle callbacks and progress monitoring.
+
+1. **What batching gives you**
+
+- Dispatch many jobs as one logical unit.
+- Track progress, completion, and failures.
+- Execute callbacks for `then`, `catch`, `finally`.
+
+2. **Example concept**
+
+- Import file split into many chunk-processing jobs in one batch.
+
+3. **Common use cases**
+
+- Data imports/exports.
+- Large reindexing operations.
+- Fan-out workloads where global completion matters.
+
+4. **Operational benefits**
+
+- Better observability and orchestration for multi-job workflows.
+- Easier cancellation/monitoring from UI/admin tools.
+
+Batching is useful when many parallel jobs belong to one business process.
+
+</details>
+
+<details>
+<summary>82. What are queued listeners?</summary>
+
+#### Laravel
+
+Queued listeners are event listeners that run asynchronously through the queue system instead of inline during event dispatch.
+
+1. **How they differ from normal listeners**
+
+- Normal listener executes immediately.
+- Queued listener is pushed to queue and processed by worker.
+
+2. **How to enable**
+
+- Listener implements `ShouldQueue`.
+
+3. **Why use them**
+
+- Keep event dispatch and request cycle fast.
+- Offload heavy side effects (emails, external API calls, analytics writes).
+
+4. **Best practices**
+
+- Ensure listener logic is idempotent.
+- Configure retries/timeouts appropriately.
+- Handle external dependency failures gracefully.
+
+Queued listeners are key for scalable event processing without blocking user requests.
+
+</details>
+
+<details>
+<summary>83. What are events and listeners in Laravel?</summary>
+
+#### Laravel
+
+Events and listeners implement publish-subscribe style communication inside a Laravel application.
+
+1. **Event**
+
+- Represents something that happened in the domain/application.
+- Example: `OrderPaid`, `UserRegistered`, `InvoiceOverdue`.
+
+2. **Listener**
+
+- Class that reacts to event and performs side effect.
+- Example: send email, update CRM, enqueue downstream job.
+
+3. **Why this pattern is useful**
+
+- Decouples core workflow from side effects.
+- Improves modularity and maintainability.
+- Enables multiple reactions to one event without changing event producer.
+
+4. **Dispatch and handling**
+
+- Dispatch event from service/controller.
+- Framework routes event to registered listeners.
+
+Events model facts; listeners implement reactions.
+
+</details>
+
+<details>
+<summary>84. How do you generate events and listeners?</summary>
+
+#### Laravel
+
+Laravel provides Artisan generators and automatic registration patterns for events and listeners.
+
+1. **Generate event**
+
+```bash
+php artisan make:event OrderPaid
+```
+
+2. **Generate listener**
+
+```bash
+php artisan make:listener SendOrderReceipt --event=OrderPaid
+```
+
+3. **Register mapping**
+
+- Map event to listener in event service provider or use framework discovery configuration.
+
+4. **Dispatch event**
+
+```php
+event(new OrderPaid($order));
+```
+
+5. **Queue listener if needed**
+
+- Implement `ShouldQueue` on listener for async handling.
+
+Generation + clear registration keeps event workflows explicit and maintainable.
+
+</details>
+
+<details>
+<summary>85. What is event-driven architecture in Laravel?</summary>
+
+#### Laravel
+
+Event-driven architecture (EDA) in Laravel organizes application behavior around domain/application events and asynchronous reactions.
+
+1. **Core principle**
+
+- Emit events when important facts occur.
+- Independent listeners handle downstream actions.
+
+2. **Benefits**
+
+- Loose coupling between modules.
+- Easier feature extension without modifying core flow.
+- Better scalability when listeners are queued.
+
+3. **Typical pattern**
+
+- Transactional action completes.
+- Event dispatched (`OrderPaid`).
+- Multiple listeners run (email, analytics, fulfillment sync).
+
+4. **Design guidance**
+
+- Keep event names business-meaningful.
+- Avoid putting heavy business logic directly in listeners unless intentional.
+- Ensure idempotency and observability for async listeners.
+
+EDA in Laravel helps build modular, scalable systems that evolve cleanly over time.
+
+</details>
