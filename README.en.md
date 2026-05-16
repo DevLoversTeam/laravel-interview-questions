@@ -3241,3 +3241,237 @@ Event-driven architecture (EDA) in Laravel organizes application behavior around
 EDA in Laravel helps build modular, scalable systems that evolve cleanly over time.
 
 </details>
+
+<details>
+<summary>86. What is Laravel Broadcasting?</summary>
+
+#### Laravel
+
+Laravel Broadcasting is Laravel’s realtime event delivery layer for pushing server-side events to frontend clients over WebSockets (or compatible drivers).
+
+1. **What it does**
+
+- Broadcasts selected Laravel events to channels.
+- Lets clients subscribe and react instantly.
+
+2. **Typical use cases**
+
+- Live notifications.
+- Chat and presence indicators.
+- Realtime dashboards and status updates.
+
+3. **Core concepts**
+
+- Channels: `public`, `private`, `presence`.
+- Authorization for private/presence channels.
+- Event classes implementing broadcasting behavior.
+
+4. **Stack overview**
+
+- Backend emits broadcast event.
+- Broadcast driver sends over websocket infrastructure.
+- Frontend (usually Laravel Echo) listens and updates UI.
+
+Broadcasting enables responsive, event-driven UX without polling-heavy architectures.
+
+</details>
+
+<details>
+<summary>87. How does Laravel Echo work?</summary>
+
+#### Laravel
+
+Laravel Echo is a JavaScript client library that subscribes to broadcast channels and listens for Laravel events in the browser.
+
+1. **Role in realtime stack**
+
+- Provides convenient frontend API over websocket transport.
+- Integrates with Laravel channel naming and event conventions.
+
+2. **How it works**
+
+- App initializes Echo with broadcaster config.
+- Client joins channels (`channel`, `private`, `presence`).
+- Listens for server-broadcast events and executes callbacks.
+
+3. **Example concept**
+
+```js
+Echo.private(`orders.${orderId}`)
+  .listen('OrderShipped', (payload) => {
+    // update UI
+  });
+```
+
+4. **Why teams use it**
+
+- Clean API for realtime subscriptions.
+- Less boilerplate around websocket event handling.
+- Works well with Laravel broadcasting/auth flow.
+
+Echo is the standard frontend bridge for Laravel realtime features.
+
+</details>
+
+<details>
+<summary>88. What is Laravel Reverb and why is it important in modern Laravel?</summary>
+
+#### Laravel
+
+Laravel Reverb is Laravel’s first-party WebSocket server for realtime broadcasting.
+
+1. **What Reverb provides**
+
+- Native Laravel-managed websocket infrastructure.
+- Tight integration with Laravel broadcasting, channel auth, and Echo.
+
+2. **Why it is important**
+
+- Reduces dependence on third-party realtime providers for many use cases.
+- Improves local development and operational consistency in Laravel-first stacks.
+- Gives teams direct control over scaling, deployment, and observability.
+
+3. **Where it fits**
+
+- Realtime notifications.
+- Live collaboration features.
+- Operational dashboards and event streams.
+
+4. **Practical impact**
+
+- Modern Laravel apps can keep more of their realtime architecture inside the Laravel ecosystem with fewer integration boundaries.
+
+Reverb is a key part of the modern Laravel realtime story.
+
+</details>
+
+<details>
+<summary>89. What is Laravel Horizon?</summary>
+
+#### Laravel
+
+Laravel Horizon is a queue monitoring and management dashboard for Redis-based queues.
+
+1. **What it does**
+
+- Visualizes queue throughput, runtime, failures, and wait times.
+- Provides worker/supervisor configuration management.
+- Helps tune queue performance and reliability.
+
+2. **Key features**
+
+- Job metrics and trends.
+- Failed-job inspection.
+- Queue balancing strategies.
+- Environment-specific supervisor definitions.
+
+3. **Why it matters**
+
+- Better operational visibility.
+- Faster incident response for async workloads.
+- Safer scaling of background processing.
+
+Horizon is the primary production operations layer for Redis queue workloads in Laravel.
+
+</details>
+
+<details>
+<summary>90. What is task scheduling in Laravel?</summary>
+
+#### Laravel
+
+Laravel task scheduling is a code-defined cron orchestration layer for recurring commands/jobs.
+
+1. **Core idea**
+
+- Define schedule in application code.
+- OS cron triggers Laravel scheduler every minute.
+
+2. **Typical usage**
+
+- Periodic data syncs.
+- Cleanup jobs.
+- Report generation.
+- Notification digests.
+
+3. **Benefits**
+
+- Centralized, versioned schedule definitions.
+- Cleaner than managing many separate server cron entries.
+- Supports overlap prevention, environment constraints, and frequency control.
+
+4. **Operational flow**
+
+- Set one cron entry for `schedule:run`.
+- Laravel decides which scheduled tasks should run now.
+
+Task scheduling gives predictable, maintainable recurring automation in Laravel apps.
+
+</details>
+
+<details>
+<summary>91. How does concurrency work in queues?</summary>
+
+#### Laravel
+
+Queue concurrency is achieved by running multiple workers (and/or multiple queues) in parallel, allowing many jobs to process simultaneously.
+
+1. **Concurrency model**
+
+- Each worker processes jobs independently.
+- More workers = higher parallel throughput (within infrastructure limits).
+
+2. **Control levers**
+
+- Number of worker processes.
+- Queue priority separation (`high`, `default`, `low`).
+- Worker timeout, retry, and memory settings.
+- Horizon balancing strategies (for Redis).
+
+3. **Safety requirements**
+
+- Jobs should be idempotent.
+- Shared resources may need locking/atomic operations.
+- Handle race conditions in state transitions.
+
+4. **Scaling pattern**
+
+- Scale workers horizontally under load.
+- Monitor queue lag and failure metrics to tune concurrency.
+
+Concurrency improves throughput, but correctness depends on job design and data consistency controls.
+
+</details>
+
+<details>
+<summary>92. What is idempotency in queued jobs?</summary>
+
+#### Laravel
+
+Idempotency means running the same job multiple times produces the same final effect as running it once.
+
+1. **Why it matters in queues**
+
+- Jobs can be retried after failures/timeouts.
+- Duplicate dispatches can happen.
+- Workers may crash after partial progress.
+
+2. **How to implement**
+
+- Use unique business keys/idempotency keys.
+- Check current state before applying side effects.
+- Use DB constraints or atomic operations.
+- Make external calls with provider-side idempotency support where available.
+
+3. **Examples**
+
+- “Send invoice email once per invoice ID.”
+- “Capture payment only if status is still pending.”
+
+4. **Best practice**
+
+- Design idempotency at use-case level, not as an afterthought.
+
+Idempotent jobs are essential for reliable, retry-safe asynchronous systems.
+
+</details>
