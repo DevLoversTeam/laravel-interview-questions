@@ -3475,3 +3475,365 @@ Idempotency means running the same job multiple times produces the same final ef
 Idempotent jobs are essential for reliable, retry-safe asynchronous systems.
 
 </details>
+
+<details>
+<summary>93. How does caching work in Laravel?</summary>
+
+#### Laravel
+
+Laravel caching stores computed data in fast storage to reduce repeated expensive operations.
+
+1. **Core idea**
+
+- Read from cache first.
+- If missing, compute data and store it with TTL.
+
+2. **Main API**
+
+- `Cache::get()`, `put()`, `remember()`, `rememberForever()`, `forget()`.
+
+3. **Typical pattern**
+
+```php
+$users = Cache::remember('users.active', 300, function () {
+    return User::where('is_active', true)->get();
+});
+```
+
+4. **Where it is used**
+
+- Query result caching.
+- Config/metadata lookups.
+- Rate-limit and session-related storage (driver-dependent).
+
+5. **Goal**
+
+- Lower DB load, lower latency, better throughput.
+
+Caching is a primary performance lever in Laravel production systems.
+
+</details>
+
+<details>
+<summary>94. What cache drivers are available?</summary>
+
+#### Laravel
+
+Laravel supports multiple cache backends through configurable drivers.
+
+1. **Common drivers**
+
+- `array` (runtime-only, non-persistent)
+- `file`
+- `database`
+- `redis`
+- `memcached`
+- `dynamodb` (when configured)
+- `null`
+
+2. **Driver characteristics**
+
+- `array`: useful for tests/local runtime only.
+- `file`/`database`: simple setup, lower performance.
+- `redis`/`memcached`: high-performance production caching.
+- `null`: disables caching behavior.
+
+3. **Selection rule**
+
+- For high-load production, Redis or Memcached are usually preferred.
+
+Driver choice depends on infrastructure, latency requirements, and operational preferences.
+
+</details>
+
+<details>
+<summary>95. What caching strategies would you use in a high-load Laravel application?</summary>
+
+#### Laravel
+
+High-load caching strategy should combine data-layer, application-layer, and invalidation discipline.
+
+1. **Cache-aside (`remember`)**
+
+- Read-through pattern for expensive queries/computations.
+- Set sensible TTLs per data volatility.
+
+2. **Multi-level approach**
+
+- Hot key/value data in Redis.
+- HTTP/CDN caching for public responses when possible.
+
+3. **Prevent stampedes**
+
+- Use locks (`Cache::lock`) around regeneration for critical hot keys.
+- Stagger TTLs or use jitter.
+
+4. **Tag-based invalidation (if supported)**
+
+- Group related cache keys by domain and flush targeted sets.
+
+5. **Optimize payloads**
+
+- Cache compact DTO/array projections, not oversized object graphs.
+
+6. **Measure continuously**
+
+- Track hit rate, p95 latency, key churn, and memory usage.
+
+7. **Fallback and resilience**
+
+- Design graceful behavior for cache misses/outages.
+
+In high-load systems, invalidation strategy and observability are as important as raw cache speed.
+
+</details>
+
+<details>
+<summary>96. What are cache tags?</summary>
+
+#### Laravel
+
+Cache tags let you logically group cache entries and invalidate them together.
+
+1. **What they solve**
+
+- Easier targeted invalidation of related keys.
+- Avoid full-cache flush for localized data changes.
+
+2. **Example concept**
+
+```php
+Cache::tags(['users', 'team:42'])->put('users.team.42.list', $data, 600);
+Cache::tags(['users', 'team:42'])->flush();
+```
+
+3. **Typical use cases**
+
+- Invalidate all cache for a tenant/project/category.
+- Group dashboard/API fragments by domain context.
+
+4. **Important note**
+
+- Cache tags are supported only by specific drivers (commonly Redis/Memcached), not all drivers.
+
+Cache tags are valuable when cache invalidation needs precision and domain grouping.
+
+</details>
+
+<details>
+<summary>97. How do you clear and warm up cache?</summary>
+
+#### Laravel
+
+Clearing removes stale entries; warming pre-populates hot entries to avoid cold-start latency.
+
+1. **Clear cache commands**
+
+```bash
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan event:clear
+```
+
+2. **Build/optimize caches**
+
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
+```
+
+3. **Warm-up strategy**
+
+- After deploy, proactively compute and store known hot keys.
+- Trigger warm-up jobs/commands for critical endpoints and dashboards.
+
+4. **Operational practice**
+
+- Prefer selective invalidation over global flush.
+- Run cache build steps in deployment pipeline.
+
+Good cache clear/warm-up flow reduces deployment latency spikes and user-facing regressions.
+
+</details>
+
+<details>
+<summary>98. What is Laravel Octane?</summary>
+
+#### Laravel
+
+Laravel Octane runs Laravel on long-lived application workers (Swoole or RoadRunner) instead of bootstrapping the framework on every request.
+
+1. **What it changes**
+
+- Keeps application in memory between requests.
+- Reuses worker processes for many requests.
+
+2. **Main outcome**
+
+- Lower request overhead and higher throughput.
+- Better latency for suitable workloads.
+
+3. **Runtime options**
+
+- Swoole-based runtime.
+- RoadRunner-based runtime.
+
+4. **Best fit**
+
+- High-traffic APIs/web apps where request bootstrap overhead is significant.
+
+Octane is a performance-oriented runtime layer for modern Laravel deployments.
+
+</details>
+
+<details>
+<summary>99. How does Laravel Octane improve performance?</summary>
+
+#### Laravel
+
+Octane improves performance by reducing per-request framework bootstrap and leveraging long-lived worker processes.
+
+1. **No full app boot every request**
+
+- Laravel container/config/routes stay in memory per worker.
+
+2. **Higher throughput**
+
+- Workers process many requests without repeated initialization costs.
+
+3. **Lower latency**
+
+- Faster response times for many request types, especially under sustained load.
+
+4. **Runtime capabilities**
+
+- Uses efficient event-loop/process models from Swoole/RoadRunner.
+
+5. **Important caveat**
+
+- Performance gains require Octane-safe code (avoid stale mutable state between requests).
+
+Octane performance comes from persistence and runtime efficiency, not automatic code optimization.
+
+</details>
+
+<details>
+<summary>100. What are Swoole and RoadRunner?</summary>
+
+#### Laravel
+
+Swoole and RoadRunner are high-performance application servers used as Octane runtimes.
+
+1. **Swoole**
+
+- PHP extension/runtime providing async I/O, coroutines, and high-performance networking primitives.
+- Very fast but requires extension-based environment setup.
+
+2. **RoadRunner**
+
+- Go-based application server that runs persistent PHP workers.
+- No Swoole extension required; different operational model.
+
+3. **Common role in Laravel**
+
+- Keep Laravel app workers alive between requests.
+- Improve throughput and reduce latency versus classic PHP-FPM per-request bootstrap.
+
+4. **Choosing between them**
+
+- Depends on team ops experience, hosting constraints, extension policy, and ecosystem fit.
+
+Both runtimes enable Octane’s long-lived worker architecture.
+
+</details>
+
+<details>
+<summary>101. What problems can occur with Octane state persistence?</summary>
+
+#### Laravel
+
+Because Octane workers are long-lived, mutable state can leak between requests if code is not designed for persistence.
+
+1. **Common risks**
+
+- Stale singleton state.
+- Request/user-specific data accidentally cached in memory.
+- Static properties retaining previous request context.
+- Memory growth from unreleased references.
+
+2. **Typical symptoms**
+
+- Cross-request data contamination.
+- Inconsistent behavior that is hard to reproduce.
+- Gradual memory bloat and worker instability.
+
+3. **How to prevent**
+
+- Keep services stateless where possible.
+- Avoid storing request-specific data in singletons/statics.
+- Reset/flush per-request state correctly.
+- Test specifically under Octane runtime behavior.
+
+4. **Operational mitigation**
+
+- Monitor worker memory.
+- Use periodic worker reload policies.
+
+Octane requires stricter state discipline than traditional request-isolated PHP-FPM apps.
+
+</details>
+
+<details>
+<summary>102. How do you optimize a Laravel application for production?</summary>
+
+#### Laravel
+
+Production optimization is a combination of build-time optimization, runtime tuning, and observability.
+
+1. **Build and cache framework metadata**
+
+- Use `config:cache`, `route:cache`, `view:cache`, `event:cache` where applicable.
+
+2. **Use OPcache and proper PHP settings**
+
+- Enable and tune OPcache for production workloads.
+
+3. **Queue and async architecture**
+
+- Move heavy operations to queues.
+- Tune worker concurrency/timeouts/retries.
+
+4. **Database performance**
+
+- Eliminate N+1 queries.
+- Add proper indexes and use `EXPLAIN`.
+- Optimize hot queries and payload size.
+
+5. **Caching strategy**
+
+- Use Redis/Memcached for application caching.
+- Define cache invalidation rules and hot-key warm-up.
+
+6. **HTTP/perimeter optimization**
+
+- Use CDN/reverse proxy where appropriate.
+- Enable compression and secure headers.
+
+7. **Monitoring and reliability**
+
+- Centralized logs, metrics, tracing.
+- Alert on latency, error rate, queue lag, failed jobs.
+
+8. **Deployment hygiene**
+
+- Zero-downtime deployment workflow.
+- Run migrations safely.
+- Keep dependencies and framework patched.
+
+Production performance is an ongoing process: measure, tune, verify, repeat.
+
+</details>
