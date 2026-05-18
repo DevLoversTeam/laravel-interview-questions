@@ -3837,3 +3837,279 @@ Production optimization is a combination of build-time optimization, runtime tun
 Production performance is an ongoing process: measure, tune, verify, repeat.
 
 </details>
+
+<details>
+<summary>103. How do you optimize Composer autoloading?</summary>
+
+#### Laravel
+
+Composer autoload optimization reduces class-loading overhead, especially in production.
+
+1. **Generate optimized class map**
+
+```bash
+composer install --no-dev --optimize-autoloader
+```
+
+or
+
+```bash
+composer dump-autoload -o
+```
+
+2. **Use authoritative class map (optional, strict)**
+
+```bash
+composer dump-autoload -a
+```
+
+- Prevents fallback PSR file lookups, improving load speed.
+- Use when class discovery is stable and generated classes are handled correctly.
+
+3. **Exclude dev dependencies in production**
+
+- Reduces autoload tree and startup overhead.
+
+4. **Deployment practice**
+
+- Rebuild optimized autoload during build/deploy pipeline.
+- Pair with OPcache and framework caches for best effect.
+
+Composer autoload tuning is a low-effort, high-impact production optimization.
+
+</details>
+
+<details>
+<summary>104. What is OPcache and why is it important?</summary>
+
+#### Laravel
+
+OPcache is a PHP extension that caches compiled script bytecode in shared memory.
+
+1. **What problem it solves**
+
+- Avoids recompiling PHP files on every request.
+
+2. **Why it matters**
+
+- Lower CPU usage.
+- Faster request handling.
+- Better throughput and reduced latency.
+
+3. **Production relevance**
+
+- Essential for any serious PHP/Laravel deployment.
+- Works especially well with stable deploy artifacts and optimized autoloading.
+
+4. **Operational note**
+
+- Tune memory and validation settings for deployment model.
+- Ensure cache reset/restart strategy during deploys.
+
+OPcache is one of the most important baseline performance features in PHP production.
+
+</details>
+
+<details>
+<summary>105. What is the JIT compiler in PHP 8+?</summary>
+
+#### Laravel
+
+JIT (Just-In-Time) compiler in PHP 8+ can compile selected opcodes into native machine code at runtime.
+
+1. **How it differs from OPcache**
+
+- OPcache caches bytecode.
+- JIT can additionally compile hot execution paths into machine code.
+
+2. **Primary target**
+
+- CPU-intensive workloads with heavy computations.
+- Not primarily I/O-bound web request logic.
+
+3. **Where configured**
+
+- PHP INI settings (`opcache.jit`, buffer sizing, mode).
+
+4. **Practical expectation**
+
+- Benefits vary by workload; not guaranteed universal speedups for typical web apps.
+
+JIT is a runtime optimization feature best evaluated with workload-specific benchmarking.
+
+</details>
+
+<details>
+<summary>106. What performance improvements does JIT provide?</summary>
+
+#### Laravel
+
+JIT can improve performance mainly for computation-heavy code paths; gains for typical Laravel web workloads are often modest.
+
+1. **Where gains are most likely**
+
+- Numeric loops, algorithmic processing, CPU-bound transformations.
+- Long-running compute tasks in CLI workers.
+
+2. **Where gains are limited**
+
+- I/O-bound requests (DB, Redis, HTTP calls, filesystem), which dominate many Laravel apps.
+
+3. **Expected impact profile**
+
+- Potential moderate-to-high gains in specific CPU-heavy hotspots.
+- Small or negligible impact in common CRUD/API flows.
+
+4. **Best practice**
+
+- Benchmark with realistic production traffic/workloads.
+- Keep OPcache, query optimization, and caching as higher-priority wins first.
+
+JIT is situational: powerful for compute-heavy tasks, secondary for most I/O-bound Laravel systems.
+
+</details>
+
+<details>
+<summary>107. How do asset bundling and Vite integration work in Laravel?</summary>
+
+#### Laravel
+
+Laravel integrates Vite for modern frontend bundling, dev server HMR, and production asset builds.
+
+1. **Development mode**
+
+- Vite dev server serves assets with hot module replacement.
+- Blade uses `@vite(...)` to load assets from dev server.
+
+2. **Production build**
+
+- `npm run build` (or equivalent) bundles/minifies assets into versioned files.
+- A manifest maps source entries to built files.
+
+3. **Laravel integration points**
+
+- `vite.config.*` defines entry points/plugins.
+- Blade directive `@vite(['resources/css/app.css', 'resources/js/app.js'])` injects correct tags.
+
+4. **Benefits**
+
+- Fast DX in local development.
+- Efficient production bundles with cache-busting fingerprints.
+
+Vite gives Laravel a modern, fast frontend pipeline from development to deployment.
+
+</details>
+
+<details>
+<summary>108. Why did Laravel move from Mix to Vite?</summary>
+
+#### Laravel
+
+Laravel moved from Mix (Webpack-based) to Vite for faster development feedback and simpler modern tooling.
+
+1. **Main reasons**
+
+- Significantly faster dev server startup.
+- Faster hot updates via native ESM pipeline.
+- Leaner configuration for many modern frontend stacks.
+
+2. **Developer experience gains**
+
+- Better responsiveness in medium/large frontend codebases.
+- Reduced config complexity for common use cases.
+
+3. **Production behavior**
+
+- Efficient build output with hashed assets and manifest integration.
+
+4. **Strategic fit**
+
+- Aligns Laravel with contemporary frontend ecosystem standards.
+
+The shift to Vite improved day-to-day productivity and kept Laravel frontend tooling modern.
+
+</details>
+
+<details>
+<summary>109. How would you scale a Laravel application horizontally?</summary>
+
+#### Laravel
+
+Horizontal scaling means running multiple application instances behind a load balancer and externalizing shared state.
+
+1. **Stateless app nodes**
+
+- Keep app servers interchangeable.
+- Store sessions/cache/queues in shared services (Redis/DB/SQS), not local memory/files.
+
+2. **Load balancing and autoscaling**
+
+- Distribute traffic across multiple instances.
+- Scale out based on CPU, latency, queue lag, and throughput metrics.
+
+3. **Database strategy**
+
+- Tune primary DB, add read replicas if needed.
+- Optimize hot queries/indexes before adding more app nodes.
+
+4. **Queue and async scaling**
+
+- Scale worker pools independently from web nodes.
+- Separate high/low priority queues.
+
+5. **Shared infrastructure concerns**
+
+- Centralized logs/metrics/traces.
+- Shared object storage for uploads.
+- Distributed locks for critical concurrency paths.
+
+6. **Deployment discipline**
+
+- Zero-downtime deploys.
+- Backward-compatible migrations during rolling updates.
+
+Horizontal scaling is effective when application state is externalized and observability is strong.
+
+</details>
+
+<details>
+<summary>110. How would you optimize database-heavy endpoints?</summary>
+
+#### Laravel
+
+Database-heavy endpoint optimization should focus on query efficiency, data shape, and caching.
+
+1. **Eliminate query inefficiencies**
+
+- Remove N+1 with eager loading.
+- Select only required columns.
+- Use `exists`, aggregates, and `withCount` where possible.
+
+2. **Index and execution plan tuning**
+
+- Add/adjust indexes for frequent filters/sorts/joins.
+- Inspect `EXPLAIN` plans and fix full scans where avoidable.
+
+3. **Reduce payload and round-trips**
+
+- Paginate large datasets.
+- Return minimal API resource fields.
+- Avoid over-fetching deep relationship trees.
+
+4. **Caching strategy**
+
+- Cache stable expensive results.
+- Use invalidation rules tied to writes.
+
+5. **Use appropriate data access layer**
+
+- Eloquent for maintainable domain flows.
+- Query builder/raw SQL for complex analytical/hot queries.
+
+6. **Measure continuously**
+
+- Track query count, p95/p99 latency, DB CPU, lock waits, and queue side effects.
+
+Optimize the worst hotspots first; measurement-driven tuning yields the highest ROI.
+
+</details>
