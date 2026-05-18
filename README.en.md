@@ -4113,3 +4113,940 @@ Database-heavy endpoint optimization should focus on query efficiency, data shap
 Optimize the worst hotspots first; measurement-driven tuning yields the highest ROI.
 
 </details>
+
+<details>
+<summary>111. How do you create REST APIs in Laravel?</summary>
+
+#### Laravel
+
+Creating REST APIs in Laravel means defining resource-oriented routes, controllers, validation, auth, and consistent JSON responses.
+
+1. **Define API routes**
+
+- Use `routes/api.php` and `Route::apiResource(...)` where applicable.
+
+2. **Use API controllers**
+
+- Keep controllers thin and delegate business logic to services/actions.
+
+3. **Validate input**
+
+- Use Form Requests for request validation and authorization.
+
+4. **Return standardized JSON**
+
+- Use API Resources for response shaping.
+
+5. **Secure endpoints**
+
+- Use Sanctum/Passport, middleware, policies, and rate limiting.
+
+6. **Operational concerns**
+
+- Add pagination, filtering, sorting, and consistent error formats.
+
+A production-ready REST API in Laravel is mostly about consistency, validation, and clear contracts.
+
+</details>
+
+<details>
+<summary>112. What is the difference between REST and GraphQL?</summary>
+
+#### Laravel
+
+REST and GraphQL are different API paradigms for client-server data exchange.
+
+1. **REST**
+
+- Multiple endpoints mapped to resources (`/users`, `/orders/{id}`).
+- Server defines response shape per endpoint.
+- Strong HTTP semantics and caching conventions.
+
+2. **GraphQL**
+
+- Usually single endpoint with typed schema.
+- Client asks exactly for needed fields.
+- Avoids under-fetching/over-fetching when designed well.
+
+3. **Tradeoff summary**
+
+- REST: simpler operational model, great for standard CRUD/public APIs.
+- GraphQL: flexible querying and aggregation, more schema/resolver complexity.
+
+4. **When to choose**
+
+- REST for straightforward resource APIs.
+- GraphQL when clients need highly dynamic data composition.
+
+Neither is universally better; choice depends on client data-access patterns and team expertise.
+
+</details>
+
+<details>
+<summary>113. How would you implement GraphQL in Laravel?</summary>
+
+#### Laravel
+
+GraphQL in Laravel is typically implemented using a package-based schema/resolver approach.
+
+1. **Install GraphQL package**
+
+- Use a mature Laravel GraphQL package compatible with current Laravel/PHP version.
+
+2. **Design schema**
+
+- Define types, queries, mutations, and input objects.
+- Keep schema aligned with domain boundaries.
+
+3. **Implement resolvers**
+
+- Map fields/operations to service/action layer.
+- Avoid business logic directly in resolver glue code.
+
+4. **Add auth and policies**
+
+- Protect sensitive fields/mutations with guards and authorization rules.
+
+5. **Performance safeguards**
+
+- Use eager loading/DataLoader-like batching to prevent N+1.
+- Limit query depth/complexity.
+
+6. **Operational practices**
+
+- Version/deprecate schema fields carefully.
+- Add observability for slow queries and resolver failures.
+
+Successful GraphQL in Laravel depends more on schema and resolver discipline than on transport setup.
+
+</details>
+
+<details>
+<summary>114. What is API versioning and why is it important?</summary>
+
+#### Laravel
+
+API versioning is the practice of managing backward-incompatible API changes using explicit version boundaries.
+
+1. **Why it is important**
+
+- Prevents breaking existing clients.
+- Enables gradual migration to new contract versions.
+- Supports long-lived external integrations.
+
+2. **Common versioning approaches**
+
+- URI versioning (`/api/v1/...`, `/api/v2/...`).
+- Header/media-type versioning.
+
+3. **Laravel implementation style**
+
+- Separate route groups/controllers/resources by version.
+- Keep shared business logic in services/actions.
+
+4. **Best practices**
+
+- Minimize breaking changes.
+- Mark deprecations clearly.
+- Provide migration timelines and compatibility windows.
+
+Versioning is a contract-management tool for stable API evolution.
+
+</details>
+
+<details>
+<summary>115. How do API Resources improve API responses?</summary>
+
+#### Laravel
+
+API Resources improve responses by making output explicit, consistent, and decoupled from internal model structure.
+
+1. **Consistency**
+
+- Standardized field names and nesting patterns.
+
+2. **Security/data control**
+
+- Prevent accidental exposure of internal attributes.
+
+3. **Transformation layer**
+
+- Format values and conditional fields predictably.
+
+4. **Maintainability**
+
+- Centralized output logic instead of ad hoc controller arrays.
+
+5. **Versioning support**
+
+- Easier contract evolution by introducing version-specific resource classes.
+
+Resources are the default, clean representation layer for Laravel JSON APIs.
+
+</details>
+
+<details>
+<summary>116. What are DTOs and should you use them in Laravel?</summary>
+
+#### Laravel
+
+DTOs (Data Transfer Objects) are typed objects used to carry validated data between layers.
+
+1. **What DTOs provide**
+
+- Explicit data contracts.
+- Better type safety and IDE/static-analysis support.
+- Cleaner service/action method signatures.
+
+2. **When useful in Laravel**
+
+- Non-trivial business flows.
+- Multi-step transformations.
+- Cross-layer boundaries (controller -> service -> job).
+
+3. **When optional**
+
+- Very simple CRUD endpoints may be fine with validated arrays.
+
+4. **Pragmatic guidance**
+
+- Use DTOs where they reduce ambiguity and duplication.
+- Avoid DTO over-engineering for tiny modules.
+
+DTOs are valuable in medium/large codebases with complex domain workflows.
+
+</details>
+
+<details>
+<summary>117. How would you validate API requests in Laravel?</summary>
+
+#### Laravel
+
+API request validation in Laravel is usually done with Form Requests and clear validation rules.
+
+1. **Use Form Request classes**
+
+- Encapsulate `authorize()` and `rules()` per endpoint/use case.
+
+2. **Apply strict rules**
+
+- Validate types, formats, required fields, uniqueness, nested arrays.
+
+3. **Sanitize/normalize where needed**
+
+- Prepare input before validation for consistent downstream handling.
+
+4. **Return consistent errors**
+
+- Keep validation error response shape standardized for clients.
+
+5. **Do not trust client input**
+
+- Validate every write endpoint even for internal APIs.
+
+Validation is a core API boundary that protects data integrity and contract quality.
+
+</details>
+
+<details>
+<summary>118. What are Form Requests?</summary>
+
+#### Laravel
+
+Form Requests are custom request classes dedicated to validation and authorization logic.
+
+1. **What they contain**
+
+- `authorize()` for access checks.
+- `rules()` for validation constraints.
+
+2. **How used**
+
+- Type-hint in controller action; Laravel auto-validates before action logic.
+
+```php
+public function store(StoreOrderRequest $request): JsonResponse
+{
+    $data = $request->validated();
+    // ...
+}
+```
+
+3. **Benefits**
+
+- Cleaner controllers.
+- Reusable/organized validation logic.
+- Testable request-level rules.
+
+Form Requests are the idiomatic Laravel approach to request boundary validation.
+
+</details>
+
+<details>
+<summary>119. How do you handle exceptions in APIs?</summary>
+
+#### Laravel
+
+API exception handling should convert internal errors into consistent, safe, machine-readable responses.
+
+1. **Centralize handling**
+
+- Use global exception handler/render logic to map exceptions to HTTP responses.
+
+2. **Map known exception types**
+
+- Validation -> `422`
+- Authentication -> `401`
+- Authorization -> `403`
+- Not found -> `404`
+- Domain/business conflicts -> appropriate `409`/`422`
+
+3. **Hide internals**
+
+- Do not expose stack traces/sensitive details in production.
+
+4. **Add observability**
+
+- Log exceptions with correlation/request context.
+- Alert on high-severity or repeated failures.
+
+5. **Keep contract stable**
+
+- Standardize error payload format across all endpoints.
+
+Good API exception handling balances client clarity with operational security.
+
+</details>
+
+<details>
+<summary>120. How do you standardize API error responses?</summary>
+
+#### Laravel
+
+Standardized API errors use one consistent JSON schema for all failure types.
+
+1. **Define one error contract**
+
+- Fields like `code`, `message`, `errors`, `meta`, `request_id`.
+
+2. **Centralize generation**
+
+- Build responses in exception handler or dedicated error response layer.
+
+3. **Use proper HTTP statuses**
+
+- Align status codes with error category.
+
+4. **Handle validation consistently**
+
+- Preserve field-level details in predictable structure.
+
+5. **Benefits**
+
+- Easier client integration.
+- Better debugging and monitoring.
+- Stable contract across teams/services.
+
+Standardization reduces API consumer friction and lowers support overhead.
+
+</details>
+
+<details>
+<summary>121. What are rate limits in APIs?</summary>
+
+#### Laravel
+
+API rate limits cap how many requests a client can make in a given window.
+
+1. **Purpose**
+
+- Prevent abuse and brute-force attempts.
+- Protect system capacity and fairness.
+
+2. **Typical dimensions**
+
+- Per IP, per user, per token, per endpoint group.
+
+3. **Client-facing behavior**
+
+- Excess traffic gets `429 Too Many Requests`.
+- Optional headers communicate limits/reset windows.
+
+4. **Design considerations**
+
+- Different limits for public vs authenticated clients.
+- Stricter limits for sensitive endpoints (auth/password reset).
+
+Rate limits are a core API reliability and security control.
+
+</details>
+
+<details>
+<summary>122. How do you secure APIs in Laravel?</summary>
+
+#### Laravel
+
+Securing Laravel APIs requires layered controls across identity, authorization, transport, validation, and operations.
+
+1. **Authentication**
+
+- Use Sanctum/Passport depending on requirements.
+- Rotate/revoke tokens and apply least privilege.
+
+2. **Authorization**
+
+- Enforce policies/gates per resource action.
+
+3. **Input and output safety**
+
+- Validate all inputs, avoid raw SQL concat, sanitize risky content paths.
+
+4. **Transport and headers**
+
+- Enforce HTTPS, configure CORS strictly, add security headers.
+
+5. **Abuse protection**
+
+- Rate limit endpoints and monitor anomalies.
+
+6. **Operational hardening**
+
+- Keep dependencies patched, centralize logs, protect secrets, and run regular security reviews.
+
+API security is defense-in-depth, not a single middleware toggle.
+
+</details>
+
+<details>
+<summary>123. What is CORS and how is it configured in Laravel?</summary>
+
+#### Laravel
+
+CORS (Cross-Origin Resource Sharing) controls which origins can access your API from browsers.
+
+1. **Why needed**
+
+- Browsers enforce same-origin policy by default.
+- CORS explicitly allows approved cross-origin requests.
+
+2. **Laravel configuration**
+
+- Configure allowed origins, methods, headers, and credentials in CORS settings.
+- Apply configuration to API paths that need cross-origin access.
+
+3. **Security guidance**
+
+- Avoid overly broad `*` in production for sensitive APIs.
+- Restrict origins to known frontend domains.
+- Use credentials only when required and configured safely.
+
+4. **Operational note**
+
+- Misconfigured CORS is a common source of frontend integration failures.
+
+CORS is a browser access policy layer, not an authentication mechanism.
+
+</details>
+
+<details>
+<summary>124. What are signed API requests?</summary>
+
+#### Laravel
+
+Signed API requests include a cryptographic signature proving request integrity and origin authenticity.
+
+1. **What signature protects**
+
+- Prevents parameter tampering.
+- Can include timestamp/nonce to limit replay risk.
+
+2. **Typical implementation concept**
+
+- Client computes signature over canonical request data using shared secret/private key.
+- Server recomputes and compares signature.
+
+3. **When useful**
+
+- Webhook verification.
+- Server-to-server integrations.
+- Critical actions where request integrity must be provable.
+
+4. **Relation to auth**
+
+- Often complements token authentication rather than replacing it.
+
+Signed requests add strong integrity guarantees for sensitive API interactions.
+
+</details>
+
+<details>
+<summary>125. How do you implement WebSockets in Laravel?</summary>
+
+#### Laravel
+
+WebSockets in Laravel are commonly implemented via Broadcasting + Reverb (or compatible websocket infrastructure) + Echo client.
+
+1. **Backend setup**
+
+- Configure broadcasting driver and websocket server.
+- Define broadcastable events and channel authorization.
+
+2. **Frontend setup**
+
+- Initialize Laravel Echo with websocket connector.
+- Subscribe to channels and listen for events.
+
+3. **Channel security**
+
+- Use private/presence channels for authenticated streams.
+
+4. **Operational concerns**
+
+- Scale websocket server instances.
+- Monitor connection counts, message rates, and reconnect behavior.
+
+5. **Use cases**
+
+- Realtime notifications, chat, collaboration, live dashboards.
+
+In modern Laravel, Reverb + Echo is the standard first-party path for WebSocket features.
+
+</details>
+
+<details>
+<summary>126. What testing tools does Laravel provide?</summary>
+
+#### Laravel
+
+Laravel provides a full testing stack for unit, feature, and integration-style testing.
+
+1. **Core framework support**
+
+- Built on PHPUnit.
+- Strong integration with Pest (popular alternative syntax).
+
+2. **HTTP testing utilities**
+
+- Request simulation (`get`, `post`, `put`, etc.).
+- JSON assertions and response structure checks.
+
+3. **Database testing helpers**
+
+- Traits for database refresh/transactions.
+- Model factories and seed helpers.
+
+4. **Fakes and mocking helpers**
+
+- `Queue::fake()`, `Event::fake()`, `Notification::fake()`, `Mail::fake()`.
+- Facade mocking and dependency mocking utilities.
+
+5. **Additional capabilities**
+
+- Console command testing.
+- Time travel helpers.
+- Parallel testing support.
+
+Laravel testing tools make it practical to test behavior from domain logic to full HTTP flows.
+
+</details>
+
+<details>
+<summary>127. What is the difference between feature tests and unit tests?</summary>
+
+#### Laravel
+
+Feature and unit tests differ by scope and integration depth.
+
+1. **Unit tests**
+
+- Test a small isolated unit (single class/method).
+- Minimal framework bootstrapping.
+- Dependencies usually mocked/faked.
+
+2. **Feature tests**
+
+- Test end-to-end application behavior through framework boundaries.
+- Often include routing, middleware, validation, DB, auth, and response assertions.
+
+3. **When to use**
+
+- Unit tests: complex pure/domain logic.
+- Feature tests: critical user/API workflows and integration confidence.
+
+4. **Balanced strategy**
+
+- Use both: unit tests for fast logic checks, feature tests for real behavior verification.
+
+Feature tests answer “does the system behavior work?”, unit tests answer “does this component logic work?”.
+
+</details>
+
+<details>
+<summary>128. What is the RefreshDatabase trait?</summary>
+
+#### Laravel
+
+`RefreshDatabase` is a test trait that resets database state between tests to ensure isolation.
+
+1. **What it does**
+
+- Runs migrations and provides clean DB state per test run strategy.
+- Prevents data leakage between tests.
+
+2. **Why it matters**
+
+- Deterministic tests.
+- Lower flakiness from leftover records.
+
+3. **Typical usage**
+
+```php
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+class UserApiTest extends TestCase
+{
+    use RefreshDatabase;
+}
+```
+
+4. **Practical note**
+
+- Test DB setup and migration speed heavily influence overall test runtime.
+
+`RefreshDatabase` is the standard baseline for reliable database-backed tests.
+
+</details>
+
+<details>
+<summary>129. How do factories improve testing?</summary>
+
+#### Laravel
+
+Factories improve tests by generating realistic, configurable model data quickly and consistently.
+
+1. **Benefits**
+
+- Less manual fixture boilerplate.
+- Clear test intent via named states.
+- Easy creation of relationship graphs.
+
+2. **Example**
+
+```php
+$user = User::factory()->admin()->create();
+$order = Order::factory()->for($user)->create();
+```
+
+3. **Why this helps quality**
+
+- Tests focus on behavior, not setup noise.
+- Data scenarios are reusable and composable.
+
+4. **Performance angle**
+
+- Faster test authoring and easier maintenance over time.
+
+Factories are one of the highest-leverage tools in Laravel testing workflows.
+
+</details>
+
+<details>
+<summary>130. How do you test APIs in Laravel?</summary>
+
+#### Laravel
+
+API testing in Laravel uses HTTP test helpers to simulate requests and assert status, payload, auth, and side effects.
+
+1. **Make requests in tests**
+
+- Use methods like `getJson`, `postJson`, `putJson`, `deleteJson`.
+
+2. **Assert responses**
+
+- Status codes, JSON structure/fragments, validation errors, pagination metadata.
+
+3. **Test auth/permissions**
+
+- Use authenticated test users/tokens.
+- Verify forbidden/unauthorized paths.
+
+4. **Test DB side effects**
+
+- Assert records created/updated/deleted.
+
+5. **Example**
+
+```php
+$response = $this->actingAs($user)->postJson('/api/orders', $payload);
+$response->assertCreated()->assertJsonStructure(['data' => ['id']]);
+```
+
+Comprehensive API tests should cover both happy path and error/authorization scenarios.
+
+</details>
+
+<details>
+<summary>131. How do you fake queues, events, notifications, and mail in tests?</summary>
+
+#### Laravel
+
+Laravel provides dedicated fakes to intercept side effects and assert intent without executing external behavior.
+
+1. **Queue fake**
+
+```php
+Queue::fake();
+Queue::assertPushed(SendInvoiceJob::class);
+```
+
+2. **Event fake**
+
+```php
+Event::fake();
+Event::assertDispatched(OrderPaid::class);
+```
+
+3. **Notification fake**
+
+```php
+Notification::fake();
+Notification::assertSentTo($user, InvoicePaidNotification::class);
+```
+
+4. **Mail fake**
+
+```php
+Mail::fake();
+Mail::assertSent(InvoicePaidMail::class);
+```
+
+5. **Why this matters**
+
+- Fast, deterministic tests.
+- Verifies orchestration without performing costly async/network side effects.
+
+Fakes are essential for isolating behavior while keeping tests reliable.
+
+</details>
+
+<details>
+<summary>132. What is Pest PHP and why is it popular with Laravel?</summary>
+
+#### Laravel
+
+Pest is a testing framework built on top of PHPUnit with a cleaner, expressive syntax and strong Laravel integration.
+
+1. **What it offers**
+
+- Concise test syntax.
+- Rich expectation API.
+- Plugin ecosystem and strong Laravel defaults.
+
+2. **Why Laravel teams like it**
+
+- Faster test writing.
+- Readable tests with less boilerplate.
+- Smooth compatibility with existing PHPUnit infrastructure.
+
+3. **Adoption advantage**
+
+- You keep PHPUnit power while getting improved DX.
+
+Pest is popular because it improves clarity and speed without requiring a full testing paradigm change.
+
+</details>
+
+<details>
+<summary>133. What is mocking in Laravel tests?</summary>
+
+#### Laravel
+
+Mocking replaces real dependencies with controllable test doubles to isolate the unit under test.
+
+1. **Why mock**
+
+- Avoid real DB/network/external service calls.
+- Simulate error paths and edge cases.
+- Verify interactions with collaborators.
+
+2. **How in Laravel**
+
+- Mock interfaces/services resolved from container.
+- Use framework fakes where appropriate.
+
+3. **Best practice**
+
+- Mock boundaries, not core pure logic.
+- Keep expectations focused on observable behavior.
+
+4. **Balance**
+
+- Combine mocked unit tests with integration/feature tests for full confidence.
+
+Mocking is a precision tool for isolation and collaboration-contract verification.
+
+</details>
+
+<details>
+<summary>134. How do you mock Facades?</summary>
+
+#### Laravel
+
+Facades can be mocked directly using built-in mocking helpers.
+
+1. **Basic approach**
+
+```php
+Cache::shouldReceive('put')
+    ->once()
+    ->with('key', 'value', 60);
+```
+
+2. **Typical usage**
+
+- Assert a facade method was called with expected arguments.
+- Return controlled values from facade calls.
+
+3. **When to prefer DI instead**
+
+- In core business services, dependency injection with interface mocks is often cleaner.
+- Facade mocking is convenient for framework glue code.
+
+4. **Guidance**
+
+- Use facade mocks intentionally; avoid over-coupling tests to implementation details.
+
+Facade mocking is useful, but architecture-level DI remains the more maintainable default for core logic.
+
+</details>
+
+<details>
+<summary>135. How do you test queued jobs?</summary>
+
+#### Laravel
+
+Testing queued jobs usually covers dispatch intent and job behavior separately.
+
+1. **Dispatch testing (orchestration)**
+
+- Fake queue and assert job was pushed.
+
+```php
+Queue::fake();
+// trigger action
+Queue::assertPushed(ProcessOrderJob::class);
+```
+
+2. **Job logic testing**
+
+- Instantiate job and call `handle()` with mocked dependencies/services.
+
+3. **Failure/retry behavior**
+
+- Test idempotency and failure paths.
+- Validate retry/backoff assumptions for critical jobs.
+
+4. **Why split tests**
+
+- Clearer diagnostics: dispatch wiring vs business behavior.
+
+Good queued-job testing ensures both scheduling intent and execution correctness.
+
+</details>
+
+<details>
+<summary>136. How do you test events and listeners?</summary>
+
+#### Laravel
+
+Event/listener tests should verify dispatching and listener reactions with clear separation.
+
+1. **Event dispatch tests**
+
+- Use `Event::fake()` and assert event dispatch from use case.
+
+2. **Listener behavior tests**
+
+- Test listener class directly (or via integration flow).
+- Assert side effects (emails, DB updates, job dispatches).
+
+3. **Queued listeners**
+
+- Assert listener/job was queued when expected.
+
+4. **Best practice**
+
+- Keep event naming domain-meaningful.
+- Ensure listeners are idempotent and safe for retries.
+
+Testing both dispatch and reaction paths provides confidence in event-driven workflows.
+
+</details>
+
+<details>
+<summary>137. What is parallel testing?</summary>
+
+#### Laravel
+
+Parallel testing runs test suites across multiple processes simultaneously to reduce total execution time.
+
+1. **How it works**
+
+- Splits test files into worker processes.
+- Each process runs a subset of tests concurrently.
+
+2. **Benefits**
+
+- Faster CI feedback loops.
+- Better developer productivity on large suites.
+
+3. **Requirements**
+
+- Proper test isolation.
+- Separate DBs/resources per process where needed.
+
+4. **Common risks**
+
+- Shared mutable state or non-isolated resources causing flaky tests.
+
+Parallel testing is one of the most effective ways to speed up large Laravel test suites.
+
+</details>
+
+<details>
+<summary>138. How do you improve test performance?</summary>
+
+#### Laravel
+
+Improving test performance requires reducing unnecessary integration cost while preserving confidence.
+
+1. **Right test mix**
+
+- Keep many fast unit tests.
+- Limit heavy feature tests to critical flows.
+
+2. **Use parallel testing**
+
+- Run tests across multiple processes in CI/local.
+
+3. **Optimize database usage**
+
+- Use lightweight test DB setup.
+- Avoid excessive seeding per test unless needed.
+
+4. **Fake expensive boundaries**
+
+- Fake mail/queue/events/notifications where side effects are not the test focus.
+
+5. **Minimize setup overhead**
+
+- Reuse factory states/fixtures efficiently.
+- Avoid unnecessary container boot complexity.
+
+6. **Profile slow tests**
+
+- Track slowest test files/cases and refactor hotspots.
+
+Test speed improves most when architecture and test design prioritize isolation and focus.
+
+</details>
