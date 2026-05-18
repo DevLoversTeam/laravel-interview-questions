@@ -5651,3 +5651,639 @@ Laravel Precognition enables frontend apps to pre-validate form input against ba
 Precognition helps deliver responsive forms without duplicating validation rules across frontend and backend.
 
 </details>
+
+<details>
+<summary>161. What are PHP generators and when should you use them?</summary>
+
+#### PHP
+
+Generators are functions that use `yield` to produce values lazily, one at a time, instead of building full arrays in memory.
+
+1. **What they solve**
+
+- Memory-efficient iteration over large datasets or streams.
+
+2. **How they work**
+
+```php
+function numbers(int $max): Generator
+{
+    for ($i = 1; $i <= $max; $i++) {
+        yield $i;
+    }
+}
+```
+
+3. **When to use**
+
+- Large file processing.
+- DB record streaming.
+- Long pipelines where full materialization is unnecessary.
+
+4. **Benefit**
+
+- Lower memory usage with clear iteration semantics.
+
+Use generators when dataset size is large or unknown and sequential processing is enough.
+
+</details>
+
+<details>
+<summary>162. What are PHP attributes?</summary>
+
+#### PHP
+
+PHP attributes are native metadata annotations using `#[...]` syntax.
+
+1. **Purpose**
+
+- Attach structured metadata to classes, methods, properties, parameters, etc.
+
+2. **Example**
+
+```php
+#[Deprecated(reason: 'Use NewService')]
+final class LegacyService {}
+```
+
+3. **Why useful**
+
+- Replaces many docblock annotation patterns with language-level metadata.
+- Improves tooling, static analysis, and framework integration.
+
+4. **Laravel context**
+
+- Can be used in custom framework extensions, validation/routing metadata patterns, and package design.
+
+Attributes provide explicit, machine-readable metadata directly in code.
+
+</details>
+
+<details>
+<summary>163. Explain strict types in PHP.</summary>
+
+#### PHP
+
+Strict types are enabled per file using `declare(strict_types=1);` and enforce stricter scalar type behavior.
+
+1. **Without strict types**
+
+- PHP may coerce scalars (`'10'` to `10`).
+
+2. **With strict types**
+
+- Incompatible scalar values trigger `TypeError` instead of silent coercion.
+
+```php
+declare(strict_types=1);
+
+function add(int $a, int $b): int
+{
+    return $a + $b;
+}
+
+add('2', 3); // TypeError
+```
+
+3. **Why important**
+
+- Better correctness and safer refactoring.
+- Stronger contracts and fewer hidden conversion bugs.
+
+Strict typing improves predictability and code quality in modern PHP codebases.
+
+</details>
+
+<details>
+<summary>164. Explain require, include, require_once, and include_once.</summary>
+
+#### PHP
+
+These language constructs load and execute PHP files with different failure and duplication behavior.
+
+1. **`require`**
+
+- Includes file.
+- Fatal error if file is missing/unreadable.
+
+2. **`include`**
+
+- Includes file.
+- Warning if missing; script continues.
+
+3. **`require_once`**
+
+- Same as `require`, but guarantees file is included only once.
+
+4. **`include_once`**
+
+- Same as `include`, but only once.
+
+5. **Practical guidance**
+
+- Use Composer autoload instead of manual include patterns in modern apps.
+- Use `require` variants for critical dependencies.
+
+The `_once` variants prevent accidental redeclaration from duplicate file inclusion.
+
+</details>
+
+<details>
+<summary>165. What are WeakMaps and what problems do they solve?</summary>
+
+#### PHP
+
+`WeakMap` stores object-keyed associations that do not prevent objects from being garbage-collected.
+
+1. **Problem solved**
+
+- Attach metadata/cache to objects without causing memory leaks.
+
+2. **How it works**
+
+- Keys must be objects.
+- When key object is destroyed, entry disappears automatically.
+
+3. **Use cases**
+
+- Per-object computed metadata caches.
+- External state tracking for objects you do not control.
+
+4. **Why better than arrays in this case**
+
+- Standard arrays with object keys/IDs can keep stale mappings alive.
+
+WeakMaps are useful for memory-safe object-associated side data.
+
+</details>
+
+<details>
+<summary>166. What is the spread/splat operator in PHP?</summary>
+
+#### PHP
+
+The spread operator `...` unpacks arrays/iterables into function arguments or array literals.
+
+1. **Function argument unpacking**
+
+```php
+$args = [2, 3];
+$result = sum(...$args);
+```
+
+2. **Array unpacking**
+
+```php
+$a = [1, 2];
+$b = [...$a, 3, 4];
+```
+
+3. **Variadic capture (related “splat” use)**
+
+```php
+function logAll(string ...$messages): void {}
+```
+
+4. **Why useful**
+
+- Cleaner argument forwarding and array composition.
+
+The operator improves readability and flexibility in function and array composition patterns.
+
+</details>
+
+<details>
+<summary>167. What are enums in PHP 8.1+?</summary>
+
+#### PHP
+
+Enums are native types that represent a fixed set of allowed values/cases.
+
+1. **Kinds**
+
+- Unit enums (no scalar value).
+- Backed enums (string or int value).
+
+2. **Example**
+
+```php
+enum OrderStatus: string
+{
+    case Draft = 'draft';
+    case Paid = 'paid';
+    case Shipped = 'shipped';
+}
+```
+
+3. **Why use enums**
+
+- Prevent invalid states.
+- Improve type safety and readability.
+- Better static analysis support.
+
+Enums are the preferred modern way to model finite domain states in PHP.
+
+</details>
+
+<details>
+<summary>168. What are readonly properties in PHP?</summary>
+
+#### PHP
+
+Readonly properties can be assigned once (typically in constructor) and then cannot be modified.
+
+1. **Behavior**
+
+- Write-once after initialization.
+- Later mutation throws error.
+
+2. **Example**
+
+```php
+final class UserDto
+{
+    public function __construct(
+        public readonly int $id,
+        public readonly string $email,
+    ) {}
+}
+```
+
+3. **Why useful**
+
+- Safer immutable data objects.
+- Fewer accidental state mutations.
+
+Readonly properties strengthen object immutability and contract clarity.
+
+</details>
+
+<details>
+<summary>169. What are readonly classes in PHP 8.2+?</summary>
+
+#### PHP
+
+A `readonly class` makes all instance properties readonly by default.
+
+1. **What it means**
+
+- Every declared property follows readonly semantics.
+- Good fit for immutable value/transfer objects.
+
+2. **Example**
+
+```php
+readonly class Money
+{
+    public function __construct(
+        public int $amount,
+        public string $currency,
+    ) {}
+}
+```
+
+3. **Why use it**
+
+- Enforces immutability policy at class level.
+- Reduces boilerplate vs declaring each property readonly.
+
+Readonly classes make immutable design intent explicit and enforceable.
+
+</details>
+
+<details>
+<summary>170. What are intersection types and union types?</summary>
+
+#### PHP
+
+Union and intersection types express richer type contracts.
+
+1. **Union type (`A|B`)**
+
+- Value may be one of listed types.
+
+2. **Intersection type (`A&B`)**
+
+- Value must satisfy all listed types simultaneously.
+
+3. **Examples**
+
+```php
+function formatId(int|string $id): string { return (string) $id; }
+
+function store(Cacheable&Jsonable $entity): void {}
+```
+
+4. **Why useful**
+
+- Stronger API contracts.
+- Better static analysis and safer refactoring.
+
+Union = flexible alternatives; intersection = combined capabilities.
+
+</details>
+
+<details>
+<summary>171. What are anonymous classes?</summary>
+
+#### PHP
+
+Anonymous classes are class instances created inline without a named class declaration.
+
+1. **Example**
+
+```php
+$logger = new class {
+    public function info(string $message): void {}
+};
+```
+
+2. **When useful**
+
+- Small one-off implementations.
+- Local test doubles/stubs.
+- Inline strategy-like behavior.
+
+3. **Tradeoff**
+
+- Convenient for local scope.
+- Named classes are better for reusable or complex logic.
+
+Anonymous classes are helpful for concise, localized object definitions.
+
+</details>
+
+<details>
+<summary>172. What are first-class callables in PHP?</summary>
+
+#### PHP
+
+First-class callable syntax (`...`) creates callable objects from functions/methods in a concise, type-safe way.
+
+1. **Example**
+
+```php
+$trimmer = trim(...);
+$callable = $service->process(...);
+```
+
+2. **Why useful**
+
+- Cleaner than string callables/array callable forms.
+- Better static analysis and refactor safety.
+
+3. **Use cases**
+
+- Functional pipelines (`array_map`, collections).
+- Callback injection patterns.
+
+First-class callables improve readability and reliability of callback-oriented code.
+
+</details>
+
+<details>
+<summary>173. What are fibers in PHP?</summary>
+
+#### PHP
+
+Fibers are low-level concurrency primitives introduced in PHP 8.1 for cooperative multitasking.
+
+1. **What they enable**
+
+- Suspend/resume execution context manually.
+- Build async frameworks/event-loop abstractions.
+
+2. **Important point**
+
+- Fibers are not parallel threads.
+- They require orchestration by runtime/library.
+
+3. **Where relevant**
+
+- Async libraries and high-concurrency runtimes.
+- Advanced non-blocking I/O abstractions.
+
+Fibers provide building blocks for structured async models in PHP ecosystems.
+
+</details>
+
+<details>
+<summary>174. What are backed enums?</summary>
+
+#### PHP
+
+Backed enums are enums whose cases are mapped to scalar values (`string` or `int`).
+
+1. **Example**
+
+```php
+enum Status: string
+{
+    case Active = 'active';
+    case Disabled = 'disabled';
+}
+```
+
+2. **Why they matter**
+
+- Easy persistence to DB/API payloads.
+- Type-safe domain representation with stable scalar mapping.
+
+3. **Useful methods**
+
+- `Status::from($value)` (throws if invalid)
+- `Status::tryFrom($value)` (returns `null` if invalid)
+
+Backed enums are ideal for finite states that must serialize cleanly.
+
+</details>
+
+<details>
+<summary>175. What are the differences between interfaces, abstract classes, and traits?</summary>
+
+#### PHP
+
+These constructs serve different reuse/abstraction purposes.
+
+1. **Interface**
+
+- Defines contract only (method signatures/constants).
+- No implementation state.
+- Supports multiple interface implementation.
+
+2. **Abstract class**
+
+- Partial implementation + shared state/behavior.
+- Can include abstract and concrete methods.
+- Single inheritance constraint.
+
+3. **Trait**
+
+- Horizontal code reuse unit mixed into classes.
+- Shares methods/properties across unrelated class hierarchies.
+
+4. **Selection rule**
+
+- Interface for capability contracts.
+- Abstract class for shared base behavior.
+- Trait for small reusable behavior slices.
+
+Choosing correctly keeps architecture explicit and maintainable.
+
+</details>
+
+<details>
+<summary>176. What are SOLID principles and how do they apply to Laravel?</summary>
+
+#### Laravel
+
+SOLID principles are OOP design guidelines that improve maintainability and extensibility.
+
+1. **S: Single Responsibility**
+
+- Keep controllers thin; move business rules to services/actions.
+
+2. **O: Open/Closed**
+
+- Extend behavior via interfaces, events, strategies, policies.
+
+3. **L: Liskov Substitution**
+
+- Implement contracts consistently so alternatives remain interchangeable.
+
+4. **I: Interface Segregation**
+
+- Prefer focused interfaces over broad “god interfaces”.
+
+5. **D: Dependency Inversion**
+
+- Depend on contracts, resolve implementations via service container.
+
+In Laravel, SOLID is applied through DI, contracts, service layers, and modular architecture boundaries.
+
+</details>
+
+<details>
+<summary>177. What are design patterns commonly used in Laravel applications?</summary>
+
+#### Laravel
+
+Laravel apps commonly combine framework patterns with classic software design patterns.
+
+1. **Common patterns**
+
+- Repository
+- Factory
+- Strategy
+- Observer
+- Decorator
+- Adapter
+- Command (jobs/commands)
+
+2. **Laravel-native pattern examples**
+
+- Service container + dependency inversion.
+- Event/listener pub-sub.
+- Middleware pipeline.
+
+3. **Why patterns matter**
+
+- Clear separation of concerns.
+- Easier testing and replacement of implementations.
+- Better long-term scalability of codebase.
+
+Pattern usage should solve real complexity, not add unnecessary abstraction.
+
+</details>
+
+<details>
+<summary>178. Explain Repository, Factory, Strategy, and Observer patterns.</summary>
+
+#### PHP
+
+These patterns solve different architecture problems.
+
+1. **Repository**
+
+- Abstracts data access behind interfaces.
+- Decouples business logic from ORM/query details.
+
+2. **Factory**
+
+- Centralizes object creation logic.
+- Useful when creation process is complex or variant-driven.
+
+3. **Strategy**
+
+- Encapsulates interchangeable algorithms/behaviors behind common interface.
+- Select implementation at runtime.
+
+4. **Observer**
+
+- One-to-many event notification pattern.
+- In Laravel: events/listeners and model observers.
+
+Each pattern should be applied where it reduces coupling and clarifies responsibilities.
+
+</details>
+
+<details>
+<summary>179. What is PSR and which PSR standards are most relevant for Laravel developers?</summary>
+
+#### PHP
+
+PSR (PHP Standards Recommendations) are interoperability standards from PHP-FIG.
+
+1. **Why PSR matters**
+
+- Consistent conventions across packages/frameworks.
+- Better interoperability in Composer ecosystem.
+
+2. **Most relevant PSRs for Laravel developers**
+
+- **PSR-1/PSR-12**: coding style/basic coding standard.
+- **PSR-4**: autoloading standard.
+- **PSR-3**: logger interface.
+- **PSR-7**: HTTP message interfaces (ecosystem integration contexts).
+- **PSR-11**: container interface concepts.
+
+3. **Practical impact**
+
+- Easier use of third-party libraries and cleaner architecture boundaries.
+
+PSR literacy helps Laravel developers build more portable and ecosystem-friendly code.
+
+</details>
+
+<details>
+<summary>180. What is Composer autoloading and how does PSR-4 work?</summary>
+
+#### PHP
+
+Composer autoloading maps class names to files so classes load automatically without manual includes.
+
+1. **Composer autoload role**
+
+- Generates optimized autoloader from package/application mappings.
+- Standard entrypoint for class loading in modern PHP apps.
+
+2. **PSR-4 principle**
+
+- Namespace prefix maps to base directory.
+- Class namespace segments map to subdirectories.
+- Class name maps to file name.
+
+3. **Example mapping concept**
+
+- `App\` -> `app/`
+- `App\Services\BillingService` -> `app/Services/BillingService.php`
+
+4. **Why important**
+
+- Predictable structure.
+- No manual `require` chains.
+- Better tooling and package interoperability.
+
+Composer + PSR-4 is the backbone of class loading in Laravel and modern PHP projects.
+
+</details>
