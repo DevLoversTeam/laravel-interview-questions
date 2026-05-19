@@ -4474,3 +4474,984 @@ Feature-тести й unit-тести відрізняються насампе�
 Unit-тест відповідає на питання “чи правильно працює цей компонент?”, feature-тест — “чи правильно працює сценарій у системі?”.
 
 </details>
+
+<details>
+<summary>127. Як factories покращують тестування?</summary>
+
+#### Laravel
+
+Factories роблять тести коротшими, зрозумілішими та стабільнішими завдяки швидкій генерації реалістичних даних.
+
+1. **Менше рутинного setup**
+
+- Не потрібно вручну готувати великі масиви тестових даних.
+
+2. **Сценарність через states**
+
+- Можна легко задавати варіації (`admin`, `inactive`, `paid` тощо).
+
+3. **Зручні зв’язки**
+
+- Просто створювати пов’язані моделі для інтеграційних кейсів.
+
+4. **Підтримуваність**
+
+- Централізована генерація даних зменшує дублювання в тестах.
+
+Factories дозволяють фокусуватися на поведінці системи, а не на технічній підготовці фікстур.
+
+</details>
+
+<details>
+<summary>128. Як factories покращують тестування?</summary>
+
+#### Laravel
+
+Factories значно спрощують підготовку даних у тестах і роблять тести читабельнішими.
+
+1. **Менше boilerplate**
+
+- Не потрібно вручну створювати великі масиви фікстур для кожного тесту.
+
+2. **Краща виразність**
+
+- Через states легко описати потрібний сценарій (`admin`, `inactive`, `paid` тощо).
+
+3. **Робота зі зв’язками**
+
+- Зручно створювати модельні графи (`for()`, `has()`) для інтеграційних кейсів.
+
+4. **Швидша підтримка тестів**
+
+- Централізовані правила генерації даних зменшують дублювання й вартість змін.
+
+Factories дозволяють тестам фокусуватися на поведінці, а не на рутинній підготовці даних.
+
+</details>
+
+<details>
+<summary>129. Як factories покращують тестування?</summary>
+
+#### Laravel
+
+Factories спрощують підготовку тестових даних і роблять тести читабельнішими.
+
+1. Менше boilerplate для створення моделей.
+2. Зручні states для різних сценаріїв.
+3. Просте створення зв’язків між моделями.
+4. Централізована генерація даних полегшує підтримку тестів.
+
+Factories дозволяють фокусувати тести на поведінці, а не на рутинному setup.
+
+</details>
+
+<details>
+<summary>130. Як тестувати API в Laravel?</summary>
+
+#### Laravel
+
+API в Laravel тестують через HTTP test helpers із перевіркою статусів, JSON-контрактів і побічних ефектів.
+
+1. Використовуйте `getJson`, `postJson`, `putJson`, `deleteJson`.
+2. Перевіряйте статуси та структуру/фрагменти JSON.
+3. Покривайте auth/authorization сценарії.
+4. Перевіряйте зміни в БД і side effects.
+
+Повноцінний API-тест має включати happy-path, validation errors і forbidden/unauthorized кейси.
+
+</details>
+
+<details>
+<summary>131. Як fake-нути queues, events, notifications і mail у тестах?</summary>
+
+#### Laravel
+
+Laravel надає вбудовані fakes, щоб перевіряти dispatch/send без виконання реальних побічних дій.
+
+1. **Queue fake**
+
+```php
+Queue::fake();
+Queue::assertPushed(SendInvoiceJob::class);
+```
+
+2. **Event fake**
+
+```php
+Event::fake();
+Event::assertDispatched(OrderPaid::class);
+```
+
+3. **Notification fake**
+
+```php
+Notification::fake();
+Notification::assertSentTo($user, InvoicePaidNotification::class);
+```
+
+4. **Mail fake**
+
+```php
+Mail::fake();
+Mail::assertSent(InvoicePaidMail::class);
+```
+
+Fakes пришвидшують тести й роблять їх детермінованими.
+
+</details>
+
+<details>
+<summary>132. Що таке Pest PHP і чому він популярний у Laravel?</summary>
+
+#### Laravel
+
+Pest — це тестовий фреймворк поверх PHPUnit із лаконічним синтаксисом і сильною інтеграцією в Laravel-екосистему.
+
+1. Виразніший і коротший синтаксис тестів.
+2. Менше шаблонного коду.
+3. Збереження сумісності з PHPUnit.
+4. Кращий developer experience для команд.
+
+Pest популярний, бо прискорює написання/читання тестів без втрати надійності.
+
+</details>
+
+<details>
+<summary>133. Як мокати Facades?</summary>
+
+#### Laravel
+
+Facades у Laravel можна мокати напряму через вбудовані mock-можливості.
+
+1. **Базовий приклад**
+
+```php
+Cache::shouldReceive('put')
+    ->once()
+    ->with('key', 'value', 60);
+```
+
+2. **Для чого це корисно**
+
+- Перевірити, що facade-метод викликано з правильними аргументами.
+- Підставити контрольовані повернення в тесті.
+
+3. **Архітектурна порада**
+
+- У core-бізнес логіці часто краще DI + mock інтерфейсу.
+- Facade mocking зручний для framework glue-коду.
+
+Facade mocking — практичний інструмент, але для критичного доменного коду DI зазвичай стабільніший.
+
+</details>
+
+<details>
+<summary>134. Як мокати Facades?</summary>
+
+#### Laravel
+
+Facades у Laravel можна мокати напряму через вбудований mock-API.
+
+1. **Базовий приклад**
+
+```php
+Cache::shouldReceive('put')
+    ->once()
+    ->with('key', 'value', 60);
+```
+
+2. **Коли це корисно**
+
+- Перевірити, що facade-метод був викликаний з очікуваними аргументами.
+- Повернути контрольоване значення в тесті.
+
+3. **Практична порада**
+
+- Для core-доменної логіки зазвичай краще DI + моки інтерфейсів.
+- Facade mocking добре підходить для framework glue-коду.
+
+Facade mocking зручний, але не має підміняти архітектурно чистий dependency injection там, де він доречний.
+
+</details>
+
+<details>
+<summary>135. Як тестувати queued jobs?</summary>
+
+#### Laravel
+
+Тестування queued jobs зазвичай ділиться на дві частини: перевірка dispatch та перевірка логіки виконання.
+
+1. **Dispatch-перевірка**
+
+- `Queue::fake()` + `Queue::assertPushed(...)`.
+
+2. **Перевірка логіки job**
+
+- Окремо тестуйте `handle()` з моками залежностей.
+
+3. **Retry/failure сценарії**
+
+- Перевіряйте ідемпотентність та поведінку при помилках.
+
+Такий поділ робить тести точнішими: окремо orchestration, окремо business logic.
+
+</details>
+
+<details>
+<summary>136. Як тестувати events і listeners?</summary>
+
+#### Laravel
+
+Events/listeners варто тестувати окремо на dispatch і на реакцію обробника.
+
+1. **Dispatch**
+
+- `Event::fake()` + `Event::assertDispatched(...)`.
+
+2. **Listener behavior**
+
+- Тестуйте side effects listener-а (БД, mail, jobs, notifications).
+
+3. **Queued listeners**
+
+- Перевіряйте, що обробка стає в чергу, коли це очікується.
+
+Це дає впевненість і в події, і в бізнес-реакції на неї.
+
+</details>
+
+<details>
+<summary>137. Що таке parallel testing?</summary>
+
+#### Laravel
+
+Parallel testing запускає тести в кількох процесах одночасно, щоб скоротити загальний час виконання.
+
+1. Тести діляться між worker-процесами.
+2. Кожен процес виконує свою частину suite паралельно.
+3. Вимагає коректної ізоляції ресурсів (особливо БД).
+
+Parallel testing значно пришвидшує CI і локальний feedback loop для великих проєктів.
+
+</details>
+
+<details>
+<summary>138. Як покращити продуктивність тестів?</summary>
+
+#### Laravel
+
+Покращення продуктивності тестів — це баланс між швидкістю та довірою до результатів.
+
+1. Тримайте healthy mix unit + feature тестів.
+2. Використовуйте parallel testing.
+3. Мінімізуйте важкі setup-кроки.
+4. Фейкайте дорогі зовнішні side effects.
+5. Профілюйте повільні тести та усувайте hot spots.
+
+Найбільший ефект дає фокус на ізоляцію, простоту та вимірювання.
+
+</details>
+
+<details>
+<summary>139. Які переваги використання Vue.js з Laravel?</summary>
+
+#### Laravel
+
+Vue.js добре поєднується з Laravel завдяки простій інтеграції та високій швидкості розробки.
+
+1. Проста інтеграція через Vite.
+2. Зручний компонентний підхід для динамічного UI.
+3. Гарна сумісність з Inertia або API-driven SPA.
+
+Це практичний full-stack вибір для багатьох продуктів на Laravel.
+
+</details>
+
+<details>
+<summary>140. Що таке Inertia.js і як він працює?</summary>
+
+#### Laravel
+
+Inertia.js дозволяє будувати SPA-подібний UX без окремого публічного API-шару для сторінок.
+
+1. Laravel-контролер повертає назву frontend-компонента + props.
+2. Inertia на клієнті робить навігацію без повного перезавантаження.
+3. UI пишеться на Vue/React/Svelte, а backend routing лишається в Laravel.
+
+Inertia поєднує переваги моноліту та сучасного frontend UX.
+
+</details>
+
+<details>
+<summary>141. Що таке Livewire і коли його використовувати?</summary>
+
+#### Laravel
+
+Livewire — це Laravel-first підхід до створення динамічного UI через server-driven компоненти без потреби у великому custom JavaScript.
+
+1. **Як працює**
+
+- Компоненти описуються PHP-класами + Blade.
+- Взаємодії в браузері тригерять запити на сервер.
+- Сервер повертає оновлення стану/DOM.
+
+2. **Коли використовувати**
+
+- Admin-панелі та внутрішні інтерфейси.
+- Form-heavy бізнес-флоу.
+- Команди з сильним PHP-фокусом.
+
+3. **Переваги**
+
+- Висока швидкість розробки.
+- Тісна інтеграція з auth/validation/policies Laravel.
+
+Livewire доречний, коли потрібен reactive UI без складної SPA-архітектури.
+
+</details>
+
+<details>
+<summary>142. Порівняйте Livewire, Inertia і традиційний SPA-підхід.</summary>
+
+#### Laravel
+
+Ці підходи відрізняються місцем, де живе основна UI-логіка та стан.
+
+1. **Livewire**
+
+- Server-driven компоненти (PHP + Blade).
+- Мінімум JS.
+
+2. **Inertia**
+
+- Client-rendered сторінки (Vue/React/Svelte), але routing/data flow контролює Laravel.
+
+3. **Традиційний SPA**
+
+- Окремий frontend-застосунок + окремий REST/GraphQL API backend.
+- Максимальна frontend-автономія, але вища загальна складність.
+
+4. **Практичний вибір**
+
+- Livewire: швидкий Laravel-centric development.
+- Inertia: SPA-like UX без повного розділення backend/frontend.
+- SPA: коли потрібна повна декуплінг-архітектура.
+
+</details>
+
+<details>
+<summary>143. Що таке TALL stack?</summary>
+
+#### Laravel
+
+TALL stack = **Tailwind CSS + Alpine.js + Laravel + Livewire**.
+
+1. **Склад**
+
+- Laravel — backend.
+- Livewire — реактивні server-driven компоненти.
+- Alpine.js — легка frontend-інтерактивність.
+- Tailwind CSS — utility-first стилізація.
+
+2. **Чому популярний**
+
+- Швидка full-stack розробка без важкого SPA-стеку.
+- Добре підходить для CRUD/admin/business застосунків.
+
+3. **Сильні сторони**
+
+- Висока швидкість ітерацій.
+- Laravel-first workflow.
+- Нижча frontend-складність у багатьох практичних кейсах.
+
+TALL — продуктивний стек для команд, які хочуть швидко будувати Laravel-продукти.
+
+</details>
+
+<details>
+<summary>144. Що таке SSR (Server-Side Rendering) і чи підтримує його Laravel?</summary>
+
+#### Laravel
+
+SSR означає рендер HTML на сервері до того, як сторінка потрапить у браузер.
+
+1. Дає кращий first paint і SEO для контентних сторінок.
+2. У Laravel SSR є нативно через Blade.
+3. Також можливий SSR у hybrid-стеках з JS-фреймворками.
+
+Laravel підтримує SSR-патерни як у класичному, так і в гібридному форматі.
+
+</details>
+
+<details>
+<summary>145. Як Laravel інтегрується з React і Vue?</summary>
+
+#### Laravel
+
+Laravel інтегрується з React/Vue через Vite і кілька архітектурних стилів.
+
+1. Blade + вбудовані компоненти React/Vue.
+2. Inertia.js як SPA-like підхід.
+3. Повністю decoupled SPA, що споживає Laravel API.
+
+Гнучкість інтеграції дозволяє обрати формат під команду й продукт.
+
+</details>
+
+<details>
+<summary>146. Що таке Ziggy у Laravel?</summary>
+
+#### Laravel
+
+Ziggy — пакет, що переносить named routes Laravel у JavaScript.
+
+1. Прибирає hardcoded URL на фронтенді.
+2. Дозволяє генерувати маршрути через JS `route(...)`.
+3. Полегшує рефакторинг route-ів без розсинхрону frontend/backend.
+
+Ziggy покращує узгодженість URL-контракту між сервером і клієнтом.
+
+</details>
+
+<details>
+<summary>147. Що таке Laravel Sail?</summary>
+
+#### Laravel
+
+Laravel Sail — офіційне Docker-оточення для локальної розробки Laravel.
+
+1. Готовий стек сервісів (PHP, БД, Redis тощо).
+2. Швидкий онбординг.
+3. Однакове середовище для всієї команди.
+
+Sail спрощує стабільну локальну розробку без ручного налаштування інфраструктури.
+
+</details>
+
+<details>
+<summary>148. Що таке Laravel Forge?</summary>
+
+#### Laravel
+
+Laravel Forge — сервіс для provisioning і deployment PHP/Laravel серверів.
+
+1. Автоматизує налаштування серверів.
+2. Спрощує SSL, процеси, deploy scripts.
+3. Зменшує DevOps-навантаження для команд.
+
+Forge допомагає швидко вести Laravel у production.
+
+</details>
+
+<details>
+<summary>149. Що таке Laravel Vapor?</summary>
+
+#### Laravel
+
+Laravel Vapor — serverless платформа для Laravel на AWS.
+
+1. Орієнтація на managed serverless інфраструктуру.
+2. Автомасштабування та зменшення server-ops.
+3. Підходить для проєктів із змінним навантаженням.
+
+Vapor — Laravel-first шлях до serverless deployment.
+
+</details>
+
+<details>
+<summary>150. Що таке Laravel Envoyer?</summary>
+
+#### Laravel
+
+Laravel Envoyer — інструмент для zero-downtime deployment.
+
+1. Release-based деплой без зупинки застосунку.
+2. Безпечне перемикання релізів.
+3. Зручні rollback-сценарії.
+
+Envoyer фокусується на стабільних безперервних деплоях.
+
+</details>
+
+<details>
+<summary>151. Що таке Laravel Pennant?</summary>
+
+#### Laravel
+
+Laravel Pennant — first-party feature flag система.
+
+1. Керує включенням/виключенням фіч за правилами.
+2. Дає gradual rollout.
+3. Дозволяє швидко відкотити проблемну фічу без повного rollback релізу.
+
+Pennant знижує ризик релізів і покращує контроль впровадження змін.
+
+</details>
+
+<details>
+<summary>152. Що таке Laravel Pulse?</summary>
+
+#### Laravel
+
+Laravel Pulse — first-party інструмент realtime-інсайтів по стану застосунку.
+
+1. Показує важливі сигнали продуктивності й навантаження.
+2. Допомагає швидше діагностувати проблеми.
+3. Добре доповнює стандартні логи й метрики.
+
+Pulse дає практичну observability-картину в екосистемі Laravel.
+
+</details>
+
+<details>
+<summary>153. Що таке Laravel Telescope?</summary>
+
+#### Laravel
+
+Laravel Telescope — інструмент дебагу та introspection для локального/стейдж середовища.
+
+1. Відстежує запити, exceptions, jobs, mail, queries тощо.
+2. Прискорює аналіз поведінки застосунку.
+3. Зазвичай обмежується для production через чутливість даних.
+
+Telescope — один із найкорисніших інструментів для debugging у Laravel.
+
+</details>
+
+<details>
+<summary>154. Що таке Laravel Scout?</summary>
+
+#### Laravel
+
+Laravel Scout — абстракція full-text пошуку для Eloquent моделей через зовнішні search engines.
+
+1. Індексує модельні дані у пошуковий backend.
+2. Надає простий API для пошуку.
+3. Дає релевантніший пошук, ніж звичайний SQL `LIKE`.
+
+Scout — зручний шар для production-grade search у Laravel.
+
+</details>
+
+<details>
+<summary>155. Які пошукові движки підтримує Laravel Scout?</summary>
+
+#### Laravel
+
+Найпоширеніші backends для Scout:
+
+1. Algolia
+2. Meilisearch
+3. Typesense
+
+Також можливі community/custom драйвери (залежно від архітектурних вимог).
+
+</details>
+
+<details>
+<summary>156. Що таке Laravel Cashier?</summary>
+
+#### Laravel
+
+Laravel Cashier — пакет для підписок і recurring billing.
+
+1. Керує планами, підписками, trial, інвойсами.
+2. Прибирає великий обсяг кастомного платіжного boilerplate.
+3. Особливо корисний для SaaS-моделей.
+
+Cashier прискорює впровадження subscription-білінгу в Laravel.
+
+</details>
+
+<details>
+<summary>157. Що таке Laravel Socialite?</summary>
+
+#### Laravel
+
+Laravel Socialite — пакет для OAuth-логіну через зовнішніх провайдерів.
+
+1. Стандартизує login-flow для “Login with ...”.
+2. Полегшує інтеграцію з Google/GitHub/Facebook та іншими.
+3. Дає єдиний API поверх різних OAuth-провайдерів.
+
+Socialite спрощує third-party auth у Laravel.
+
+</details>
+
+<details>
+<summary>158. Що таке Laravel Pint?</summary>
+
+#### Laravel
+
+Laravel Pint — opinionated code style fixer на базі PHP-CS-Fixer.
+
+1. Автоматично приводить код до єдиного стилю.
+2. Зменшує шум у diff і code review.
+3. Зручно запускати локально й у CI.
+
+Pint підвищує консистентність коду в команді.
+
+</details>
+
+<details>
+<summary>159. Що таке Laravel Folio?</summary>
+
+#### Laravel
+
+Laravel Folio — file-based routing підхід для page-oriented Laravel застосунків.
+
+1. Маршрути будуються за файловими конвенціями.
+2. Менше route-boilerplate для контентних сторінок.
+3. Швидше масштабування структури простих page-flow.
+
+Folio — альтернатива класичному route-дизайну для певних типів застосунків.
+
+</details>
+
+<details>
+<summary>160. Що таке Laravel Precognition?</summary>
+
+#### Laravel
+
+Laravel Precognition дозволяє робити попередню backend-валідацію форми до фінального submit.
+
+1. Дає швидкий validation feedback під час введення.
+2. Використовує ті самі server-side правила як source of truth.
+3. Покращує UX складних форм.
+
+Precognition прибирає дублювання валідації між frontend і backend.
+
+</details>
+
+<details>
+<summary>161. Що таке PHP generators і коли їх варто використовувати?</summary>
+
+#### PHP
+
+Generators (`yield`) повертають значення ліниво, по одному, без побудови великої структури в пам’яті.
+
+1. Знижують memory usage на великих наборах.
+2. Добрі для потокової обробки файлів/даних.
+3. Підходять для послідовних pipeline-алгоритмів.
+
+Generators — ключ до memory-efficient ітерації в PHP.
+
+</details>
+
+<details>
+<summary>162. Що таке PHP attributes?</summary>
+
+#### PHP
+
+Attributes (`#[...]`) — нативні метадані в PHP.
+
+1. Прив’язуються до класів/методів/властивостей/параметрів.
+2. Замінюють частину docblock-анотацій.
+3. Полегшують інтеграцію з tooling і framework-логікою.
+
+Attributes роблять метадані структурованими та машиночитними.
+
+</details>
+
+<details>
+<summary>163. Поясніть strict types у PHP.</summary>
+
+#### PHP
+
+`declare(strict_types=1);` вмикає сувору перевірку scalar-типів у файлі.
+
+1. Без strict types PHP може робити неявні перетворення.
+2. З strict types невідповідність типу дає `TypeError`.
+3. Це підвищує передбачуваність і безпеку рефакторингу.
+
+Strict types — важливий елемент сучасного production PHP-стилю.
+
+</details>
+
+<details>
+<summary>164. Поясніть require, include, require_once, include_once.</summary>
+
+#### PHP
+
+Ці конструкції підключають PHP-файли з різною поведінкою при помилках і повторних включеннях.
+
+1. `require` — фатальна помилка, якщо файл недоступний.
+2. `include` — warning, виконання може продовжитись.
+3. `_once`-варіанти підключають файл лише один раз.
+
+У сучасних Laravel/PHP-проєктах основним механізмом лишається Composer autoload.
+
+</details>
+
+<details>
+<summary>165. Що таке WeakMap і яку проблему він вирішує?</summary>
+
+#### PHP
+
+`WeakMap` зберігає дані, прив’язані до об’єктів, не заважаючи збирачу сміття видаляти ці об’єкти.
+
+1. Ключами можуть бути лише об’єкти.
+2. Коли об’єкт-ключ знищується, відповідний запис зникає автоматично.
+3. Це зручно для тимчасових метаданих і кешів без memory leaks.
+
+`WeakMap` корисний, коли потрібно пов’язати “додатковий стан” з об’єктом без ризику утримувати його в пам’яті зайво довго.
+
+</details>
+
+<details>
+<summary>166. Що таке spread/splat оператор у PHP?</summary>
+
+#### PHP
+
+Оператор `...` у PHP використовується для розпакування значень і variadic-аргументів.
+
+1. **Розпакування аргументів**
+
+```php
+$args = [2, 3];
+$result = sum(...$args);
+```
+
+2. **Розпакування масивів**
+
+```php
+$a = [1, 2];
+$b = [...$a, 3, 4];
+```
+
+3. **Variadic-параметри**
+
+```php
+function logAll(string ...$messages): void {}
+```
+
+`...` робить код коротшим і зручнішим для композиції аргументів/даних.
+
+</details>
+
+<details>
+<summary>167. Що таке enums у PHP 8.1+?</summary>
+
+#### PHP
+
+Enums — нативний тип для фіксованої множини дозволених значень/станів.
+
+1. Є unit enums і backed enums.
+2. Прибирають “магічні рядки”.
+3. Покращують type safety і читабельність домену.
+
+Enums — дефолтний сучасний спосіб опису finite-state в PHP.
+
+</details>
+
+<details>
+<summary>168. Що таке readonly properties у PHP?</summary>
+
+#### PHP
+
+Readonly-властивість можна встановити один раз (частіше в конструкторі), після чого змінювати не можна.
+
+1. Менше випадкових мутацій.
+2. Краща модель immutable DTO/value objects.
+3. Чіткіші контракти стану об’єкта.
+
+Readonly properties підвищують надійність об’єктного дизайну.
+
+</details>
+
+<details>
+<summary>169. Що таке readonly classes у PHP 8.2+?</summary>
+
+#### PHP
+
+`readonly class` робить усі instance-властивості класу readonly.
+
+1. Імм’ютабельність задається на рівні всього класу.
+2. Менше шаблонного коду.
+3. Добре підходить для value objects/DTO.
+
+Readonly classes спрощують дисципліну незмінності даних.
+
+</details>
+
+<details>
+<summary>170. Що таке intersection types і union types?</summary>
+
+#### PHP
+
+Union і intersection типи дозволяють точніше описувати контракти.
+
+1. `A|B` (union): значення може бути одного з типів.
+2. `A&B` (intersection): значення має відповідати всім типам одночасно.
+
+Вони підвищують виразність API та якість static analysis.
+
+</details>
+
+<details>
+<summary>171. Що таке anonymous classes?</summary>
+
+#### PHP
+
+Anonymous class — клас без імені, що створюється inline.
+
+1. Корисний для одноразових імплементацій.
+2. Зручний у тестах як локальний double.
+3. Для багаторазової логіки краще named class.
+
+Anonymous classes — інструмент локальної лаконічності в коді.
+
+</details>
+
+<details>
+<summary>172. Що таке first-class callables у PHP?</summary>
+
+#### PHP
+
+First-class callables дають короткий синтаксис отримання callable через `...`.
+
+1. Краща читабельність callback-коду.
+2. Краще для рефакторингу, ніж string-callables.
+3. Зручно в map/filter/pipeline сценаріях.
+
+Це сучасний безпечний спосіб роботи з callback-ами.
+
+</details>
+
+<details>
+<summary>173. Що таке fibers у PHP?</summary>
+
+#### PHP
+
+Fibers — low-level примітив кооперативної конкурентності в PHP 8.1+.
+
+1. Дають можливість suspend/resume виконання.
+2. Це не потоки й не паралелізм “сам по собі”.
+3. Використовуються асинхронними рантаймами/бібліотеками.
+
+Fibers — фундамент для advanced async-моделей у PHP.
+
+</details>
+
+<details>
+<summary>174. Що таке backed enums?</summary>
+
+#### PHP
+
+Backed enums — enums, чиї case-и мають scalar-значення (`string` або `int`).
+
+1. Зручні для збереження в БД і серіалізації в API.
+2. Дають типобезпеку + стабільний формат значення.
+3. Підтримують `from()` і `tryFrom()`.
+
+Backed enums — практичний стандарт для доменних статусів із persistence.
+
+</details>
+
+<details>
+<summary>175. У чому різниця між interfaces, abstract classes і traits?</summary>
+
+#### PHP
+
+1. **Interface** — контракт без реалізації.
+2. **Abstract class** — часткова реалізація + спільний стан.
+3. **Trait** — горизонтальний реюз методів між класами.
+
+Вибір залежить від задачі: контракт, базова поведінка або локальний реюз.
+
+</details>
+
+<details>
+<summary>176. Що таке SOLID і як ці принципи застосовуються в Laravel?</summary>
+
+#### Laravel
+
+SOLID — набір OOP-принципів для гнучкої та підтримуваної архітектури.
+
+1. Thin controllers, SRP.
+2. Розширення через інтерфейси/події (OCP).
+3. Сумісні реалізації контрактів (LSP).
+4. Малі цільові інтерфейси (ISP).
+5. Залежність від абстракцій через container/DI (DIP).
+
+У Laravel SOLID реалізується через contracts, service container і модульний дизайн.
+
+</details>
+
+<details>
+<summary>177. Які design patterns найчастіше використовують у Laravel-застосунках?</summary>
+
+#### Laravel
+
+Поширені патерни:
+
+1. Repository
+2. Factory
+3. Strategy
+4. Observer
+5. Command (jobs/commands)
+6. Adapter/Decorator (залежно від інтеграцій)
+
+Патерни мають зменшувати складність, а не додавати зайву абстракцію.
+
+</details>
+
+<details>
+<summary>178. Поясніть Repository, Factory, Strategy, Observer.</summary>
+
+#### PHP
+
+1. **Repository** — абстрагує доступ до даних.
+2. **Factory** — централізує створення об’єктів.
+3. **Strategy** — взаємозамінні алгоритми за спільним інтерфейсом.
+4. **Observer** — реакції на події (у Laravel: events/listeners, model observers).
+
+Ці патерни допомагають розділяти відповідальності й зменшувати зв’язаність.
+
+</details>
+
+<details>
+<summary>179. Що таке PSR і які стандарти PSR найважливіші для Laravel-розробника?</summary>
+
+#### PHP
+
+PSR (PHP Standards Recommendations) — стандарти інтероперабельності від PHP-FIG.
+
+Найважливіші для Laravel:
+
+1. PSR-1 / PSR-12 — coding style.
+2. PSR-3 — logger interface.
+3. PSR-4 — autoloading.
+4. PSR-7 — HTTP message interfaces (інтеграційні сценарії).
+5. PSR-11 — container interface концепції.
+
+PSR-знання підвищує сумісність і якість архітектури в PHP-екосистемі.
+
+</details>
+
+<details>
+<summary>180. Що таке Composer autoloading і як працює PSR-4?</summary>
+
+#### PHP
+
+Composer autoloading автоматично підвантажує класи без ручних `require/include`, а PSR-4 визначає стандарт відповідності namespace до файлової структури.
+
+1. **Composer autoload**
+
+- Генерує автозавантажувач із конфігурації проєкту/пакетів.
+- Підвантажує класи на вимогу.
+
+2. **PSR-4 принцип**
+
+- Namespace-префікс мапиться на базову директорію.
+- Частини namespace відповідають піддиректоріям.
+- Ім’я класу відповідає імені файла.
+
+3. **Приклад**
+
+- `App\\` -> `app/`
+- `App\\Services\\BillingService` -> `app/Services/BillingService.php`
+
+Composer + PSR-4 — фундамент сучасної організації коду в PHP/Laravel-проєктах.
+
+</details>
