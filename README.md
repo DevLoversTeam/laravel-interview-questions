@@ -38,7 +38,1211 @@ Laravel — це сучасний PHP-фреймворк для веброзро
 </details>
 
 <details>
-<summary>44. У чому різниця між масивами й колекціями?</summary>
+<summary>2. Що таке Composer autoloading і як працює PSR-4?</summary>
+
+#### PHP
+
+Composer autoloading — це механізм автоматичного завантаження класів без ручних `require/include`, а PSR-4 — стандарт мапінгу namespace до файлової структури.
+
+1. **Роль Composer autoload**
+
+- Генерує автозавантажувач на основі конфігурації пакетів/застосунку.
+- Підключається один раз і підвантажує класи за потреби.
+
+2. **Принцип PSR-4**
+
+- Namespace-префікс мапиться на базову директорію.
+- Сегменти namespace відповідають піддиректоріям.
+- Ім’я класу відповідає імені файла.
+
+3. **Приклад**
+
+- `App\\` -> `app/`
+- `App\\Services\\BillingService` -> `app/Services/BillingService.php`
+
+4. **Чому це важливо**
+
+- Передбачувана структура коду.
+- Менше ручного bootstrap-боїлерплейту.
+- Краща сумісність із екосистемою пакетів.
+
+Composer + PSR-4 — фундамент сучасної організації PHP/Laravel-кодової бази.
+
+</details>
+
+<details>
+<summary>3. Що таке spread/splat оператор у PHP?</summary>
+
+#### PHP
+
+Оператор `...` у PHP використовується для розпакування аргументів/масивів і для variadic-параметрів.
+
+1. **Argument unpacking**
+
+```php
+$args = [2, 3];
+$result = sum(...$args);
+```
+
+2. **Array unpacking**
+
+```php
+$a = [1, 2];
+$b = [...$a, 3, 4];
+```
+
+3. **Variadic capture**
+
+```php
+function logAll(string ...$messages): void {}
+```
+
+`...` робить функціональний і композиційний код коротшим і читабельнішим.
+
+</details>
+
+<details>
+<summary>4. Що таке enums у PHP 8.1+?</summary>
+
+#### PHP
+
+Enums — це нативні типи для моделювання обмеженої множини станів/значень.
+
+1. **Види**
+
+- Unit enums (без скалярного значення).
+- Backed enums (із `string` або `int` значенням).
+
+2. **Приклад**
+
+```php
+enum OrderStatus: string
+{
+    case Draft = 'draft';
+    case Paid = 'paid';
+    case Shipped = 'shipped';
+}
+```
+
+3. **Навіщо**
+
+- Сильніші контракти.
+- Менше “магічних рядків”.
+- Краща type safety і static analysis.
+
+Enums — рекомендований підхід для finite-state моделей у сучасному PHP.
+
+</details>
+
+<details>
+<summary>5. Що таке readonly properties у PHP?</summary>
+
+#### PHP
+
+`readonly` властивість можна присвоїти лише один раз (зазвичай у конструкторі).
+
+1. **Поведінка**
+
+- Після ініціалізації змінювати значення заборонено.
+
+2. **Приклад**
+
+```php
+final class UserDto
+{
+    public function __construct(
+        public readonly int $id,
+        public readonly string $email,
+    ) {}
+}
+```
+
+3. **Переваги**
+
+- Менше випадкових мутацій.
+- Простіше підтримувати immutable-об’єкти.
+
+Readonly properties підвищують передбачуваність об’єктного стану.
+
+</details>
+
+<details>
+<summary>6. Що таке readonly classes у PHP 8.2+?</summary>
+
+#### PHP
+
+`readonly class` робить усі instance-властивості класу readonly за замовчуванням.
+
+1. **Що це дає**
+
+- Політика незмінності на рівні всього класу.
+- Менше boilerplate, ніж ставити `readonly` на кожне поле окремо.
+
+2. **Приклад**
+
+```php
+readonly class Money
+{
+    public function __construct(
+        public int $amount,
+        public string $currency,
+    ) {}
+}
+```
+
+Readonly classes добре підходять для value objects і DTO з immutable-семантикою.
+
+</details>
+
+<details>
+<summary>7. Що таке PHP generators і коли їх варто використовувати?</summary>
+
+#### PHP
+
+Generators — це функції з `yield`, які повертають значення ліниво, по одному, без створення великого масиву в пам’яті.
+
+1. **Що вирішують**
+
+- Значно зменшують споживання пам’яті при обробці великих наборів даних.
+
+2. **Коли використовувати**
+
+- Потокова обробка файлів.
+- Ітерація великих вибірок із БД.
+- Пайплайни, де не потрібна повна матеріалізація всіх даних.
+
+3. **Приклад**
+
+```php
+function numbers(int $max): Generator
+{
+    for ($i = 1; $i <= $max; $i++) {
+        yield $i;
+    }
+}
+```
+
+Generators доречні там, де важлива memory-efficiency і послідовна обробка даних.
+
+</details>
+
+<details>
+<summary>8. Що таке Laravel Sail?</summary>
+
+#### Laravel
+
+Laravel Sail — це офіційне легковагове Docker-оточення для локальної розробки Laravel.
+
+1. **Що дає Sail**
+
+- Готові контейнери для PHP, БД, Redis та супутніх сервісів.
+- Узгоджене локальне середовище для всієї команди.
+
+2. **Чому його використовують**
+
+- Швидкий онбординг нових розробників.
+- Менше “працює тільки в мене” проблем.
+- Не треба вручну збирати локальний стек.
+
+3. **Практична користь**
+
+- Команди запуску, тестування й сервісних операцій виконуються через єдиний Docker-based workflow.
+
+Sail — практичний дефолт для контейнеризованої локальної розробки на Laravel.
+
+</details>
+
+<details>
+<summary>9. Що таке Form Requests?</summary>
+
+#### Laravel
+
+Form Requests — це окремі request-класи, які інкапсулюють валідацію та авторизацію для конкретного HTTP-запиту.
+
+1. **Що містять**
+
+- `authorize()` для перевірки права на дію.
+- `rules()` для правил валідації.
+
+2. **Як використовуються**
+
+- Type-hint у controller action; Laravel автоматично виконує перевірки до бізнес-логіки.
+
+```php
+public function store(StoreOrderRequest $request): JsonResponse
+{
+    $data = $request->validated();
+    // ...
+}
+```
+
+3. **Переваги**
+
+- Тонші контролери.
+- Централізована й повторно використовувана валідація.
+- Простіше тестування request-рівня.
+
+Form Requests — канонічний Laravel-підхід до валідації вхідних даних на межі API/web.
+
+</details>
+
+<details>
+<summary>10. Як створювати REST API у Laravel?</summary>
+
+#### Laravel
+
+Створення REST API у Laravel базується на ресурсних маршрутах, валідації, авторизації та стабільному JSON-контракті.
+
+1. Використовуйте `routes/api.php` і `Route::apiResource(...)`.
+2. Тримайте контролери тонкими, бізнес-логіку виносьте в сервіси/actions.
+3. Валідуйте вхідні дані через Form Requests.
+4. Формуйте відповіді через API Resources.
+5. Захищайте API через Sanctum/Passport, middleware, policies і rate limiting.
+
+Добрий REST API в Laravel — це насамперед узгодженість контрактів і передбачувана поведінка.
+
+</details>
+
+<details>
+<summary>11. Як працює concurrency у чергах?</summary>
+
+#### Laravel
+
+Concurrency у чергах досягається запуском кількох workers паралельно, щоб обробляти багато jobs одночасно.
+
+1. **Модель**
+
+- Кожен worker обробляє jobs незалежно.
+- Більше workers = вищий паралельний throughput.
+
+2. **Керування**
+
+- Кількість worker-процесів.
+- Розділення за пріоритетними чергами.
+- Налаштування timeout/retry/memory.
+
+3. **Вимоги до коректності**
+
+- Jobs мають бути ідемпотентними.
+- Для спільних ресурсів потрібні блокування/атомарні операції.
+
+Concurrency підвищує пропускну здатність, але вимагає правильної моделі консистентності.
+
+</details>
+
+<details>
+<summary>12. Що таке ідемпотентність у queued jobs?</summary>
+
+#### Laravel
+
+Ідемпотентність означає: повторний запуск тієї самої job не змінює фінальний результат порівняно з одноразовим виконанням.
+
+1. **Чому це критично**
+
+- Jobs можуть ретраїтися.
+- Можливі дублікати dispatch.
+
+2. **Як реалізувати**
+
+- Унікальні бізнес-ключі/idempotency keys.
+- Перевірка стану перед побічною дією.
+- DB-обмеження або атомарні операції.
+
+3. **Приклад**
+
+- “Надіслати інвойс лише один раз на invoice ID”.
+
+Ідемпотентність — ключ до надійних retry-safe асинхронних процесів.
+
+</details>
+
+<details>
+<summary>13. Як працює кешування в Laravel?</summary>
+
+#### Laravel
+
+Laravel cache зберігає попередньо обчислені дані у швидкому сховищі, щоб зменшити повторні дорогі обчислення.
+
+1. **Патерн**
+
+- Читаємо з кешу.
+- За відсутності — обчислюємо і зберігаємо з TTL.
+
+2. **API**
+
+- `get`, `put`, `remember`, `rememberForever`, `forget`.
+
+3. **Приклад**
+
+```php
+$users = Cache::remember('users.active', 300, fn () => User::where('is_active', true)->get());
+```
+
+Кеш знижує latency й навантаження на БД.
+
+</details>
+
+<details>
+<summary>14. Які cache drivers доступні?</summary>
+
+#### Laravel
+
+Поширені cache drivers у Laravel:
+
+- `array`
+- `file`
+- `database`
+- `redis`
+- `memcached`
+- `dynamodb` (за конфігурації)
+- `null`
+
+Для high-load сценаріїв зазвичай обирають Redis або Memcached.
+
+</details>
+
+<details>
+<summary>15. Які cache-стратегії варто використовувати у high-load Laravel-застосунку?</summary>
+
+#### Laravel
+
+1. Cache-aside (`remember`) для дорогих запитів.
+2. Захист від cache stampede через locks/jitter.
+3. Точкове invalidation (за можливості tags).
+4. Кешування компактних payload замість важких об’єктів.
+5. Постійний моніторинг hit rate/latency.
+
+У high-load найважливіші не лише швидкі кеші, а й правильна invalidation-стратегія.
+
+</details>
+
+<details>
+<summary>16. Що таке cache tags?</summary>
+
+#### Laravel
+
+Cache tags дозволяють групувати ключі й очищати їх разом.
+
+1. **Навіщо**
+
+- Точкове очищення пов’язаних кешів без глобального flush.
+
+2. **Приклад**
+
+```php
+Cache::tags(['users', 'team:42'])->put('users.team.42.list', $data, 600);
+Cache::tags(['users', 'team:42'])->flush();
+```
+
+Працює не на всіх драйверах (типово Redis/Memcached).
+
+</details>
+
+<details>
+<summary>17. Як очищати та прогрівати кеш?</summary>
+
+#### Laravel
+
+1. **Очищення**
+
+```bash
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+```
+
+2. **Побудова кешів**
+
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+3. **Warm-up**
+
+- Після деплою наперед заповнюйте “гарячі” ключі для зменшення cold-start.
+
+</details>
+
+<details>
+<summary>18. Що таке Laravel Octane?</summary>
+
+#### Laravel
+
+Laravel Octane запускає Laravel на long-lived workers (Swoole або RoadRunner) замість повного bootstrap на кожен запит.
+
+Це дає вищий throughput і нижчу latency для відповідних навантажень.
+
+</details>
+
+<details>
+<summary>19. Як Laravel Octane покращує продуктивність?</summary>
+
+#### Laravel
+
+1. Менше перезапусків framework bootstrap.
+2. Більше запитів на один worker-процес.
+3. Краща ефективність під сталим навантаженням.
+
+Важливо писати Octane-safe код (без витоків mutable state між запитами).
+
+</details>
+
+<details>
+<summary>20. Що таке Swoole і RoadRunner?</summary>
+
+#### Laravel
+
+Swoole і RoadRunner — high-performance application servers для Octane.
+
+- **Swoole**: PHP-розширення з async/coroutines.
+- **RoadRunner**: Go-based сервер із persistent PHP workers.
+
+Обидва зменшують overhead класичного request-per-process підходу.
+
+</details>
+
+<details>
+<summary>21. Які проблеми можуть виникати через state persistence в Octane?</summary>
+
+#### Laravel
+
+Оскільки workers довгоживучі, помилки керування станом можуть “протікати” між запитами.
+
+1. Stale singleton/static state.
+2. Випадкове збереження request/user контексту.
+3. Memory growth і нестабільність worker-ів.
+
+Потрібні stateless-підходи, скидання контексту й моніторинг пам’яті.
+
+</details>
+
+<details>
+<summary>22. Як оптимізувати Laravel-застосунок для production?</summary>
+
+#### Laravel
+
+1. Увімкнути framework caches (`config`, `route`, `view`).
+2. Налаштувати OPcache.
+3. Виносити важкі задачі в queues.
+4. Оптимізувати БД (N+1, індекси, `EXPLAIN`).
+5. Використовувати Redis/Memcached кеш.
+6. Налаштувати моніторинг і алерти.
+7. Використовувати безпечний zero-downtime deployment flow.
+
+Production-оптимізація — безперервний цикл “виміряти → покращити → перевірити”.
+
+</details>
+
+<details>
+<summary>23. Що таке task scheduling у Laravel?</summary>
+
+#### Laravel
+
+Task scheduling у Laravel — це кодо-орієнтований шар керування регулярними задачами (cron orchestration).
+
+1. **Базова ідея**
+
+- Розклад визначається в коді застосунку.
+- Системний cron запускає Laravel scheduler щохвилини.
+
+2. **Типові сценарії**
+
+- Періодичні синхронізації даних.
+- Очистка службових даних.
+- Генерація звітів.
+- Розсилки за розкладом.
+
+3. **Переваги**
+
+- Централізовані, версійовані правила запуску.
+- Менше ручного адміністрування великої кількості cron-записів на сервері.
+- Підтримка overlap-захисту, environment-умов і гнучкої частоти.
+
+4. **Операційний принцип**
+
+- Налаштовується один cron-запис для `schedule:run`.
+- Laravel сам визначає, які задачі мають запуститися в поточну хвилину.
+
+Task scheduling робить регулярну автоматизацію в Laravel передбачуваною й підтримуваною.
+
+</details>
+
+<details>
+<summary>24. Що таке Laravel Broadcasting?</summary>
+
+#### Laravel
+
+Laravel Broadcasting — це realtime-шар Laravel для доставки server-side подій клієнтам через WebSockets (або сумісні драйвери).
+
+1. **Що він робить**
+
+- Транслює вибрані події Laravel у канали.
+- Дозволяє клієнтам підписуватися й реагувати миттєво.
+
+2. **Типові сценарії**
+
+- Живі сповіщення.
+- Чати та індикатори присутності.
+- Realtime-дашборди й оновлення статусів.
+
+3. **Ключові поняття**
+
+- Канали: `public`, `private`, `presence`.
+- Авторизація для private/presence каналів.
+- Event-класи з broadcasting-поведінкою.
+
+4. **Загальна схема**
+
+- Backend dispatch-ить broadcast event.
+- Broadcast driver відправляє подію у websocket-інфраструктуру.
+- Frontend (зазвичай Laravel Echo) слухає подію та оновлює UI.
+
+Broadcasting дозволяє будувати реактивний UX без надмірного polling.
+
+</details>
+
+<details>
+<summary>25. Що таке job batching?</summary>
+
+#### Laravel
+
+Job batching об’єднує багато jobs в один керований пакет із загальним життєвим циклом.
+
+1. **Що це дає**
+
+- Dispatch багатьох jobs як одного логічного процесу.
+- Відстеження прогресу, завершення та помилок.
+- Callback-и на етапах `then`, `catch`, `finally`.
+
+2. **Типовий сценарій**
+
+- Імпорт великого файлу, розбитий на багато jobs по чанках.
+
+3. **Де корисно**
+
+- Масові імпорт/експорт процеси.
+- Переіндексація.
+- Fan-out завдання, де важливий загальний статус.
+
+4. **Практична користь**
+
+- Краще спостереження за multi-job workflow.
+- Простіше керування в адмінці (моніторинг/скасування).
+
+Batching доречний, коли багато паралельних jobs належать одному бізнес-процесу.
+
+</details>
+
+<details>
+<summary>26. Як працюють signed URLs у Laravel?</summary>
+
+#### Laravel
+
+Signed URL містить криптографічний підпис, що підтверджує: посилання сформоване вашим застосунком і не було змінене.
+
+1. **Що захищається**
+
+- Цілісність path і query parameters.
+- За потреби — строк дії (тимчасові посилання).
+
+2. **Як згенерувати**
+
+```php
+$url = URL::signedRoute('unsubscribe', ['user' => $user->id]);
+$temporary = URL::temporarySignedRoute('download', now()->addMinutes(30), ['file' => $fileId]);
+```
+
+3. **Як перевірити**
+
+- Використайте middleware `signed` на маршруті або відповідну перевірку в запиті.
+
+```php
+Route::get('/unsubscribe/{user}', UnsubscribeController::class)
+    ->name('unsubscribe')
+    ->middleware('signed');
+```
+
+4. **Типові сценарії**
+
+- Unsubscribe links.
+- Email verification дії.
+- Тимчасові download/action посилання.
+
+Signed URLs дають простий спосіб безпечно відкривати публічні дії без обов’язкової сесійної автентифікації.
+
+</details>
+
+<details>
+<summary>27. Як Laravel захищає від XSS-атак?</summary>
+
+#### Laravel
+
+Laravel запобігає XSS переважно через безпечний рендеринг і escaping за замовчуванням.
+
+1. **Blade екранує вивід автоматично**
+
+- `{{ $value }}` HTML-escape-иться за замовчуванням.
+- Це не дозволяє недовіреному HTML/JS виконатися в браузері.
+
+2. **Обережно з raw output**
+
+- `{!! $value !!}` рендерить без escaping.
+- Використовуйте лише для довіреного або попередньо санітайзеного контенту.
+
+3. **Додаткові захисні шари**
+
+- Валідація й нормалізація вводу.
+- CSP та інші security headers (через middleware/server config).
+
+4. **API/frontend-практика**
+
+- JSON-відповіді зазвичай безпечніші за вставку сирого HTML.
+- На client-side також потрібно екранувати недовірені дані.
+
+5. **Практичне правило**
+
+- Escape by default, sanitize when needed, minimize raw rendering paths.
+
+Laravel дає сильні дефолти, але фінальна безпека залежить від дисципліни виводу в прикладному коді.
+
+</details>
+
+<details>
+<summary>28. Як Laravel захищає від SQL Injection?</summary>
+
+#### Laravel
+
+Laravel знижує ризик SQL Injection завдяки parameter binding і безпечним query-абстракціям за замовчуванням.
+
+1. **Prepared statements і bindings**
+
+- Query Builder та Eloquent використовують bind-параметри замість конкатенації SQL-рядків.
+
+2. **Безпечні приклади**
+
+```php
+User::where('email', $email)->first();
+DB::table('orders')->where('status', $status)->get();
+```
+
+3. **Де лишається ризик**
+
+- Ручна конкатенація в raw SQL із недовіреним вводом.
+
+```php
+// небезпечно, якщо $input недовірений
+DB::select("SELECT * FROM users WHERE email = '$input'");
+```
+
+4. **Безпечний raw SQL**
+
+- Використовуйте placeholders і bindings:
+
+```php
+DB::select('SELECT * FROM users WHERE email = ?', [$input]);
+```
+
+5. **Best practices**
+
+- Віддавайте перевагу Eloquent/Query Builder.
+- Валідуйте вхідні дані.
+- Мінімізуйте ручне складання SQL із зовнішніх параметрів.
+
+Laravel безпечний за замовчуванням, але некоректне використання raw SQL може повернути injection-ризики.
+
+</details>
+
+<details>
+<summary>29. Коли обирати Sanctum замість Passport?</summary>
+
+#### Laravel
+
+Sanctum доцільно обирати тоді, коли потрібна проста first-party автентифікація без повного OAuth2-стека.
+
+1. **Коли Sanctum підходить найкраще**
+
+- SPA + Laravel backend із session/cookie auth.
+- Mobile або внутрішні клієнти з personal access tokens.
+- Невеликі/середні API, де не потрібна OAuth2 delegation.
+
+2. **Чому саме Sanctum**
+
+- Швидше впровадження.
+- Менша операційна складність.
+- Менше рухомих частин у керуванні токенами.
+
+3. **Коли його недостатньо**
+
+- Потрібна делегована авторизація для сторонніх застосунків.
+- Потрібні повні OAuth2 grant-flow і стандартизований auth-server рівень.
+
+4. **Практичне правило**
+
+- За замовчуванням для first-party продуктів — Sanctum.
+- Переходьте на Passport, коли OAuth2-вимоги чітко сформульовані.
+
+Sanctum — прагматичний дефолт для більшості Laravel API у продуктовій розробці.
+
+</details>
+
+<details>
+<summary>30. Порівняйте Laravel Sanctum і Laravel Passport.</summary>
+
+#### Laravel
+
+Sanctum і Passport обидва надають API-автентифікацію, але орієнтовані на різну складність задач.
+
+1. **Sanctum**
+
+- Легковагова token-auth + SPA session-auth.
+- Personal access tokens і прості abilities.
+- Швидший старт і менше OAuth2-складності.
+
+2. **Passport**
+
+- Повноцінний OAuth2 server.
+- Підтримує authorization code, client credentials, refresh tokens, scopes та інші OAuth2-механізми.
+- Краще підходить для third-party delegated authorization.
+
+3. **Компроміс**
+
+- Sanctum: простіше впровадити і підтримувати для first-party застосунків.
+- Passport: потужніше, але важче в налаштуванні та операційному супроводі.
+
+4. **Типовий вибір**
+
+- Sanctum: SPA/mobile + власний backend.
+- Passport: платформи з зовнішніми OAuth-клієнтами та складними auth-сценаріями.
+
+Обирайте за реальними протокольними вимогами, а не за “універсальністю” пакета.
+
+</details>
+
+<details>
+<summary>31. Що таке multi-authentication і як його реалізувати?</summary>
+
+#### Laravel
+
+Multi-authentication — це підтримка кількох типів користувачів/guard-контекстів в одному застосунку (наприклад, `web`, `admin`, `api`).
+
+1. **Типові сценарії**
+
+- Окремі портали для адміністраторів і клієнтів.
+- Різні рівні доступу для внутрішніх і зовнішніх користувачів.
+- Різні auth-стратегії для різних каналів доступу.
+
+2. **Як реалізувати**
+
+- Налаштувати кілька guards/providers у auth-конфігурації.
+- Використовувати middleware з конкретним guard: `auth:admin`, `auth:web`, `auth:sanctum`.
+- За потреби мати окремі login-flow/controllers/routes для кожного guard.
+
+3. **Приклад**
+
+```php
+Route::middleware('auth:admin')->group(function () {
+    Route::get('/admin/dashboard', AdminDashboardController::class);
+});
+```
+
+4. **Best practices**
+
+- Ізолюйте route-групи для кожного guard.
+- Тримайте authorization-правила явними для кожного user-type.
+
+Multi-auth дає чітке розділення ідентичностей і прав доступу в різних доменах одного застосунку.
+
+</details>
+
+<details>
+<summary>32. Як працює автентифікація в Laravel?</summary>
+
+#### Laravel
+
+Автентифікація в Laravel перевіряє особу користувача й зберігає її між запитами через guards і providers.
+
+1. **Ключові складові**
+
+- **Guards** визначають, як користувач автентифікується (session, token тощо).
+- **Providers** визначають, як отримуються користувачі (зазвичай Eloquent-модель).
+
+2. **Session-based flow (web)**
+
+- Користувач надсилає credentials.
+- Laravel валідує їх через provider.
+- У разі успіху ID користувача зберігається в сесії.
+- Наступні запити резолвлять користувача із session/cookie.
+
+3. **Token-based flow (API)**
+
+- Клієнт надсилає токен (наприклад, Sanctum/Passport bearer token).
+- Guard валідує токен і резолвить користувача.
+
+4. **Корисні helper-и**
+
+- `Auth::attempt()`, `Auth::user()`, `auth()->check()`.
+- Middleware `auth` для захисту маршрутів.
+
+Laravel-автентифікація є guard-орієнтованою та однаково добре працює і для web, і для API.
+
+</details>
+
+<details>
+<summary>33. У чому різниця між API Resources і Transformers?</summary>
+
+#### Laravel
+
+Обидва підходи формують вихідні дані, але API Resources — це нативний стандарт Laravel, а Transformers — ширший архітектурний патерн або зовнішній шар мапінгу.
+
+1. **API Resources (вбудовано в Laravel)**
+
+- Офіційний механізм Laravel (`JsonResource`).
+- Тісна інтеграція з фреймворком і просте використання.
+- Найкращий дефолт для більшості Laravel API.
+
+2. **Transformers (загальний патерн / пакети)**
+
+- Архітектурний підхід для мапінгу domain-даних у response DTO.
+- Може бути реалізований кастомними класами або пакетами (наприклад, Fractal-подібні підходи).
+- Корисний, коли потрібен framework-agnostic або дуже кастомний transformation pipeline.
+
+3. **Практична різниця**
+
+- Resource = офіційний Laravel-підхід.
+- Transformer = ширший патерн, який може як використовувати Laravel-примітиви, так і бути незалежним від них.
+
+4. **Що обирати**
+
+- У Laravel-first застосунках: за замовчуванням API Resources.
+- Кастомний transformer-шар: коли межі домену/API вимагають додаткового відокремлення.
+
+Обидва підходи розв’язують проблему представлення даних; вибір залежить від складності архітектури та вимог до переносимості.
+
+</details>
+
+<details>
+<summary>34. Що таке soft deletes?</summary>
+
+#### Laravel
+
+Soft deletes позначають запис як видалений, але фізично не видаляють його з таблиці.
+
+1. **Як це працює**
+
+- Використовується колонка `deleted_at`.
+- Під час видалення встановлюється `deleted_at`, а рядок лишається в БД.
+- Дефолтні запити не повертають soft-deleted записи.
+
+2. **Увімкнення в моделі**
+
+```php
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Post extends Model
+{
+    use SoftDeletes;
+}
+```
+
+3. **Ключові helper-методи**
+
+- `withTrashed()` — включити видалені записи.
+- `onlyTrashed()` — тільки видалені.
+- `restore()` — відновити запис.
+- `forceDelete()` — видалити назавжди.
+
+4. **Чому це корисно**
+
+- Можливість відновлення даних.
+- Краща “аудитність” і безпечніший робочий процес при випадкових видаленнях.
+
+Soft deletes — практичний компроміс між семантикою видалення та відновлюваністю даних.
+
+</details>
+
+<details>
+<summary>35. Що таке database seeding?</summary>
+
+#### Laravel
+
+Database seeding — це процес заповнення бази даних наперед визначеними або згенерованими даними.
+
+1. **Призначення**
+
+- Підготувати застосунок до роботи з необхідними стартовими даними.
+- Дати реалістичні набори даних для development/testing.
+
+2. **Як запускається**
+
+- Класи сідів виконуються через Artisan.
+
+```bash
+php artisan db:seed
+php artisan db:seed --class=UserSeeder
+```
+
+3. **Типовий процес**
+
+- `DatabaseSeeder` оркеструє запуск інших сідів.
+- Factories використовуються для масового створення синтетичних записів.
+
+4. **Best practices**
+
+- Критичні довідкові дані робіть детермінованими.
+- У production уникайте руйнівної логіки сідів, якщо це не заплановано явно.
+- Версіонуйте сіди разом із кодовою базою.
+
+Seeding забезпечує відтворюваність середовищ і готовність системи до розробки чи тестування.
+
+</details>
+
+<details>
+<summary>36. Як генерувати й відкочувати міграції?</summary>
+
+#### Laravel
+
+Laravel надає Artisan-команди для створення міграцій і керування їх виконанням.
+
+1. **Генерація міграції**
+
+```bash
+php artisan make:migration create_orders_table
+php artisan make:migration add_status_to_orders_table --table=orders
+```
+
+2. **Запуск міграцій**
+
+```bash
+php artisan migrate
+```
+
+3. **Відкат останнього batch**
+
+```bash
+php artisan migrate:rollback
+```
+
+4. **Відкат кількох кроків**
+
+```bash
+php artisan migrate:rollback --step=3
+```
+
+5. **Інші корисні команди**
+
+- `php artisan migrate:reset` (відкатити все)
+- `php artisan migrate:refresh` (reset + migrate)
+- `php artisan migrate:fresh` (видалити всі таблиці + migrate)
+
+Команди rollback/refresh потрібно застосовувати обережно, особливо в production-середовищі.
+
+</details>
+
+<details>
+<summary>37. Що таке транзакції бази даних і як їх використовувати?</summary>
+
+#### Laravel
+
+Транзакція бази даних об’єднує кілька операцій в одну атомарну дію: або виконуються всі, або всі відкочуються.
+
+1. **Навіщо потрібні транзакції**
+
+- Зберігають цілісність даних при пов’язаних записах.
+- Запобігають частковим змінам, якщо виникла помилка.
+
+2. **Використання в Laravel**
+
+```php
+DB::transaction(function () use ($orderData) {
+    $order = Order::create($orderData);
+    Inventory::reserveForOrder($order);
+    Payment::captureForOrder($order);
+});
+```
+
+3. **Ручне керування (за потреби)**
+
+```php
+DB::beginTransaction();
+
+try {
+    // operations
+    DB::commit();
+} catch (Throwable $e) {
+    DB::rollBack();
+    throw $e;
+}
+```
+
+4. **Best practices**
+
+- Тримайте транзакцію короткою й швидкою.
+- Уникайте довгих зовнішніх HTTP-викликів усередині транзакції.
+- За потреби комбінуйте з row locking для конкурентно-чутливих сценаріїв.
+
+Транзакції критично важливі для надійних фінансових, складських і багатокрокових бізнес-процесів.
+
+</details>
+
+<details>
+<summary>38. Як вивести raw SQL-запити в Laravel?</summary>
+
+#### Laravel
+
+У Laravel є кілька способів переглянути SQL і bindings залежно від глибини дебагу.
+
+1. **`toSql()` + `getBindings()`**
+
+```php
+$query = User::where('email', 'like', '%@example.com%');
+
+$sql = $query->toSql();
+$bindings = $query->getBindings();
+```
+
+2. **`toRawSql()` (сучасний Laravel)**
+
+- Повертає SQL із підставленими bindings для зручнішого читання.
+
+```php
+$sql = User::where('id', 5)->toRawSql();
+```
+
+3. **Слухач запитів**
+
+```php
+DB::listen(function ($query) {
+    logger()->debug($query->sql, $query->bindings);
+});
+```
+
+4. **Інструменти**
+
+- Laravel Telescope / Debugbar можуть показувати виконані запити та їхній час.
+
+Ці підходи варто використовувати в development/debugging, а не як постійну production-вивідну логіку.
+
+</details>
+
+<details>
+<summary>39. Що таке chunking і коли використовувати chunk() або lazy()?</summary>
+
+#### Laravel
+
+Chunking — це обробка результатів запиту невеликими пакетами, а не завантаження всього набору в пам’ять одразу.
+
+1. **`chunk()`**
+
+- Отримує записи фіксованими порціями й виконує callback для кожного chunk.
+
+```php
+User::query()->chunk(1000, function ($users) {
+    foreach ($users as $user) {
+        // process
+    }
+});
+```
+
+2. **`lazy()`**
+
+- Внутрішньо теж працює через порції, але назовні дає єдиний lazy-потік.
+- Зручніший для pipeline-style коду.
+
+```php
+User::query()->lazy(1000)->each(function (User $user) {
+    // process
+});
+```
+
+3. **Коли що обирати**
+
+- `chunk()` — коли потрібна явна обробка “пакет за пакетом”.
+- `lazy()` — коли потрібен гнучкий потоковий fluent-процес.
+
+4. **Важлива примітка**
+
+- Якщо ви оновлюєте записи під час ітерації, віддавайте перевагу ID-орієнтованим варіантам (`chunkById`, `lazyById`), щоб уникнути пропусків/дублів.
+
+Chunking — базова практика для обробки великих наборів даних із контрольованим споживанням пам’яті.
+
+</details>
+
+<details>
+<summary>40. Яке призначення методу cursor()?</summary>
+
+#### Laravel
+
+`cursor()` повертає lazy-ітератор результатів, що дозволяє проходити записи по одному з мінімальним використанням пам’яті.
+
+1. **Навіщо використовувати**
+
+- Щоб не завантажувати весь результат запиту в RAM.
+- Щоб ефективно обробляти великі таблиці.
+
+2. **Приклад**
+
+```php
+foreach (User::where('is_active', true)->cursor() as $user) {
+    // process user
+}
+```
+
+3. **Характеристики**
+
+- Ітерація на базі генератора.
+- Добре підходить для read/process-пайплайнів.
+- Ефективний у queue/long-running job сценаріях.
+
+4. **Коли це не ідеально**
+
+- Якщо потрібен випадковий доступ до всіх результатів одразу.
+- Якщо потрібна важка eager-завантажена графова структура для всього набору.
+
+`cursor()` — ключовий інструмент масштабованої обробки записів “рядок за рядком”.
+
+</details>
+
+<details>
+<summary>41. Що таке Lazy Collections?</summary>
+
+#### Laravel
+
+Lazy Collections обробляють елементи як потік (на базі генераторів), а не завантажують усі дані в пам’ять одразу.
+
+1. **Ключова властивість**
+
+- Пам’яткоефективна ітерація великих наборів даних.
+
+2. **Як це працює**
+
+- Елементи генеруються та обробляються по одному.
+- Ланцюжок трансформацій виконується ліниво, під час ітерації.
+
+3. **Типові джерела**
+
+- `lazy()` у запитах.
+- `cursor()` в Eloquent/query builder.
+- Кастомні генератори, обгорнуті в `LazyCollection`.
+
+4. **Коли використовувати**
+
+- Скрипти міграції даних.
+- Великі експорт/імпорт процеси.
+- Фонові задачі з мільйонами рядків.
+
+5. **Компроміс**
+
+- Частина операцій колекцій, що вимагає повної матеріалізації, менш зручна для lazy-підходу.
+
+Lazy Collections ідеальні там, де безпека пам’яті важливіша за random access.
+
+</details>
+
+<details>
+<summary>42. У чому різниця між масивами й колекціями?</summary>
 
 #### Laravel
 
@@ -75,7 +1279,1511 @@ $names = collect($users)
 </details>
 
 <details>
-<summary>43. Що таке Eloquent Collections?</summary>
+<summary>43. Як згенерувати events і listeners?</summary>
+
+#### Laravel
+
+Laravel надає Artisan-генератори та стандартний flow реєстрації для events/listeners.
+
+1. **Згенерувати event**
+
+```bash
+php artisan make:event OrderPaid
+```
+
+2. **Згенерувати listener**
+
+```bash
+php artisan make:listener SendOrderReceipt --event=OrderPaid
+```
+
+3. **Зареєструвати зв’язок**
+
+- Зв’яжіть event і listener в event service provider або використовуйте discovery-конфігурацію фреймворку.
+
+4. **Dispatch події**
+
+```php
+event(new OrderPaid($order));
+```
+
+5. **Черга для listener за потреби**
+
+- Реалізуйте `ShouldQueue` у listener, щоб обробка йшла асинхронно.
+
+Генерація + явна реєстрація роблять event-workflow прозорим і підтримуваним.
+
+</details>
+
+<details>
+<summary>44. Що таке events і listeners у Laravel?</summary>
+
+#### Laravel
+
+Events і listeners реалізують publish-subscribe підхід для внутрішньої взаємодії модулів у Laravel-застосунку.
+
+1. **Event**
+
+- Представляє факт того, що щось сталося в домені/застосунку.
+- Приклади: `OrderPaid`, `UserRegistered`, `InvoiceOverdue`.
+
+2. **Listener**
+
+- Клас-обробник, який реагує на event і виконує побічну дію.
+- Приклади: надіслати email, оновити CRM, поставити downstream-job.
+
+3. **Чому цей підхід корисний**
+
+- Розв’язує core-flow і побічні дії.
+- Підвищує модульність і підтримуваність.
+- Дозволяє додавати кілька реакцій на одну подію без зміни producer-коду.
+
+4. **Dispatch і обробка**
+
+- Подія dispatch-иться із сервісу/контролера.
+- Фреймворк доставляє її зареєстрованим listeners.
+
+Events описують факти, listeners реалізують реакції.
+
+</details>
+
+<details>
+<summary>45. Що таке queued listeners?</summary>
+
+#### Laravel
+
+Queued listeners — це event-listeners, які виконуються асинхронно через систему черг, а не одразу під час dispatch події.
+
+1. **Чим відрізняються від звичайних listeners**
+
+- Звичайний listener виконується негайно.
+- Queued listener ставиться в чергу й обробляється worker-ом.
+
+2. **Як увімкнути**
+
+- Listener має реалізувати `ShouldQueue`.
+
+3. **Навіщо це потрібно**
+
+- Не блокувати request-cycle важкими побічними діями.
+- Винести у фон email, зовнішні API-виклики, аналітику тощо.
+
+4. **Best practices**
+
+- Робіть listener-логіку ідемпотентною.
+- Налаштовуйте retries/timeouts відповідно до ризиків.
+- Обробляйте помилки зовнішніх залежностей явно.
+
+Queued listeners — ключовий елемент масштабованої event-обробки без деградації UX.
+
+</details>
+
+<details>
+<summary>46. Що таке job batching?</summary>
+
+#### Laravel
+
+Job batching об’єднує багато jobs в один відстежуваний пакет із спільним життєвим циклом і callback-обробкою.
+
+1. **Що дає batching**
+
+- Можливість dispatch-ити багато jobs як один логічний блок.
+- Відстеження прогресу, завершення та помилок.
+- Callback-и на етапах `then`, `catch`, `finally`.
+
+2. **Приклад сценарію**
+
+- Імпорт великого файлу, розбитий на багато chunk-processing jobs в одному batch.
+
+3. **Типові use case**
+
+- Імпорт/експорт даних.
+- Масові reindex-операції.
+- Fan-out навантаження, де важливий загальний статус виконання.
+
+4. **Операційні переваги**
+
+- Краща спостережуваність і керованість multi-job workflow.
+- Простіший контроль (моніторинг/скасування) через адмінські інструменти.
+
+Batching корисний, коли багато паралельних jobs належать до одного бізнес-процесу.
+
+</details>
+
+<details>
+<summary>47. Як обробляти failed jobs?</summary>
+
+#### Laravel
+
+Laravel надає вбудовані механізми для фіксації, аналізу, повторного запуску та очищення failed jobs.
+
+1. **Фіксація помилок**
+
+- Налаштуйте сховище для failed jobs (зазвичай таблиця `failed_jobs`).
+- Винятки під час виконання переводять job у failed після вичерпання retry-ліміту.
+
+2. **Retry-поведінка**
+
+- Контролюється через властивості/опції job (`tries`, backoff-стратегії).
+
+3. **Корисні команди**
+
+```bash
+php artisan queue:failed
+php artisan queue:retry all
+php artisan queue:forget <id>
+php artisan queue:flush
+```
+
+4. **Job-рівнева обробка**
+
+- Реалізуйте метод `failed(Throwable $e)` для cleanup/alert/compensation логіки.
+
+5. **Best practices**
+
+- Робіть jobs ідемпотентними.
+- Додавайте структуроване логування й алерти.
+- Розділяйте transient і permanent failure-сценарії.
+
+Надійна обробка failed jobs критична для стабільної асинхронної архітектури.
+
+</details>
+
+<details>
+<summary>48. У чому різниця між queue drivers: sync, database, Redis і SQS?</summary>
+
+#### Laravel
+
+Ці драйвери відрізняються моделлю виконання, продуктивністю, надійністю та операційними вимогами.
+
+1. **`sync`**
+
+- Виконує job негайно в межах поточного запиту.
+- Не потребує фонового worker.
+- Добре для local dev/простих сценаріїв, але не для важкої асинхронної production-нагрузки.
+
+2. **`database`**
+
+- Зберігає jobs у таблиці реляційної БД.
+- Простий у старті й надійний, але зазвичай повільніший на високому throughput.
+
+3. **`redis`**
+
+- In-memory backend із високою швидкістю.
+- Підходить для високого throughput і низької latency.
+- Часто використовується разом із Horizon для моніторингу.
+
+4. **`sqs`**
+
+- Повністю керований queue-сервіс AWS.
+- Висока масштабованість і надійність.
+- Підходить для distributed/cloud-native архітектур; має хмарні затримки/вартість.
+
+5. **Практичний вибір**
+
+- Малий/простий проєкт: `database`.
+- Високонавантажений стек із Redis: `redis`.
+- AWS-native розподілені системи: `sqs`.
+- Локальне або примусово синхронне виконання: `sync`.
+
+Вибір драйвера має відповідати профілю навантаження та інфраструктурній стратегії.
+
+</details>
+
+<details>
+<summary>49. Які queue drivers доступні в Laravel?</summary>
+
+#### Laravel
+
+Laravel підтримує кілька backend-ів черг через конфігуровані drivers.
+
+1. **Поширені вбудовані drivers**
+
+- `sync`
+- `database`
+- `redis`
+- `sqs` (Amazon SQS)
+- `null`
+
+2. **Загальні характеристики**
+
+- `sync`: виконує job одразу в поточному request-потоці.
+- `database`: зберігає jobs у таблицях БД.
+- `redis`: швидкий in-memory backend.
+- `sqs`: керований хмарний queue-сервіс.
+- `null`: ігнорує jobs (корисно для окремих local/testing сценаріїв).
+
+3. **Конфігурація**
+
+- Налаштовується в `config/queue.php` та через environment variables.
+
+Driver обирають за вимогами до надійності, throughput, інфраструктури та операційної моделі.
+
+</details>
+
+<details>
+<summary>50. Що таке jobs і queue workers?</summary>
+
+#### Laravel
+
+Jobs і workers — це базові producer-consumer компоненти асинхронної обробки в Laravel.
+
+1. **Jobs**
+
+- Інкапсульовані класи задач (зазвичай у `app/Jobs`).
+- Представляють окрему одиницю роботи для негайного або відкладеного виконання.
+- Для асинхронного виконання зазвичай реалізують `ShouldQueue`.
+
+2. **Queue workers**
+
+- Довгоживучі процеси, які виконують jobs із черги.
+- Запускаються через Artisan (`php artisan queue:work`).
+- Підтримують параметри retries, timeout, sleep, queue selection.
+
+3. **Потік виконання**
+
+- Код dispatch-ить job (`dispatch(...)`).
+- Payload job потрапляє в обраний queue backend.
+- Worker забирає job і виконує `handle()`.
+
+4. **Операційна примітка**
+
+- У production workers зазвичай керуються process manager-ом (Supervisor/systemd).
+
+Jobs визначають роботу, а workers безперервно виконують її у фоні.
+
+</details>
+
+<details>
+<summary>51. Поясніть систему черг у Laravel.</summary>
+
+#### Laravel
+
+Система черг Laravel виносить довгі або важкі задачі з HTTP request-cycle в асинхронну фонову обробку.
+
+1. **Навіщо використовуються черги**
+
+- Швидша відповідь користувачу.
+- Краща масштабованість під навантаженням.
+- Надійне виконання із retry-механізмами та контролем помилок.
+
+2. **Як це працює**
+
+- Застосунок dispatch-ить job у queue backend.
+- Queue worker читає job із черги й виконує її.
+- Невдалі jobs можна повторити або зберігати у failed storage.
+
+3. **Типові задачі в черзі**
+
+- Email-розсилки, сповіщення, генерація звітів.
+- Інтеграції з зовнішніми API та webhooks.
+- Обробка зображень/відео, важкі імпорт/експорт операції.
+
+4. **Ключові інструменти екосистеми**
+
+- Worker-команда `queue:work`.
+- Відстеження через `failed_jobs`.
+- Horizon (для Redis-черг) для моніторингу та керування.
+
+Черги — критичний елемент для responsive і надійних Laravel-застосунків.
+
+</details>
+
+<details>
+<summary>52. Що таке encrypted cookies і signed cookies?</summary>
+
+#### Laravel
+
+Encrypted cookies і signed cookies обидва захищають цілісність cookie, але шифрування додатково захищає конфіденційність вмісту.
+
+1. **Encrypted cookies**
+
+- Значення cookie шифрується й підписується.
+- Клієнт не може прочитати або коректно змінити оригінальне значення.
+- Laravel middleware може автоматично шифрувати/дешифрувати такі cookie.
+
+2. **Signed cookies (орієнтація на цілісність)**
+
+- Значення може залишатися читабельним, але перевіряється підписом.
+- Дозволяє виявляти підміну, але не приховує зміст.
+
+3. **Дефолтна поведінка Laravel**
+
+- У типовому web-стеку Laravel зазвичай використовуються саме encrypted cookies.
+
+4. **Коли що використовувати**
+
+- Encrypted cookies — для чутливих або stateful значень.
+- Signed-only підхід — коли читабельність прийнятна, але потрібна перевірка цілісності.
+
+5. **Security note**
+
+- Завжди встановлюйте `Secure`, `HttpOnly` та коректний `SameSite`.
+
+На практиці encrypted cookies найчастіше є безпечнішим дефолтним вибором для Laravel web-застосунків.
+
+</details>
+
+<details>
+<summary>53. Як працюють signed URLs у Laravel?</summary>
+
+#### Laravel
+
+Signed URL містить криптографічний підпис, який підтверджує, що посилання згенероване вашим застосунком і не було змінене.
+
+1. **Що саме захищає**
+
+- Цілісність path і query parameters.
+- Опційно — строк дії для time-limited посилань.
+
+2. **Генерація signed URL**
+
+```php
+$url = URL::signedRoute('unsubscribe', ['user' => $user->id]);
+$temporary = URL::temporarySignedRoute('download', now()->addMinutes(30), ['file' => $fileId]);
+```
+
+3. **Перевірка підпису**
+
+- Використовуйте middleware `signed` на маршруті або перевірку через helper запиту.
+
+```php
+Route::get('/unsubscribe/{user}', UnsubscribeController::class)
+    ->name('unsubscribe')
+    ->middleware('signed');
+```
+
+4. **Типові сценарії**
+
+- Unsubscribe-посилання.
+- Email verification дії.
+- Тимчасові download/action посилання.
+
+Signed URL — простий спосіб захищати публічні дії без обов’язкової повної автентифікованої сесії.
+
+</details>
+
+<details>
+<summary>54. Яких security best practices має дотримуватися кожен Laravel-застосунок?</summary>
+
+#### Laravel
+
+Кожен Laravel-застосунок має поєднувати дефолтні механізми фреймворку зі строгою операційною дисципліною.
+
+1. **Auth і контроль доступу**
+
+- Захищайте приватні маршрути автентифікацією.
+- Використовуйте gates/policies для перевірки прав.
+- Дотримуйтеся принципу найменших привілеїв.
+
+2. **Безпека вводу/виводу**
+
+- Валідуйте всі вхідні дані.
+- Екрануйте вивід за замовчуванням (Blade `{{ }}`).
+- Уникайте конкатенації raw SQL; використовуйте bindings.
+
+3. **Безпека сесій і cookies**
+
+- Увімкніть `HttpOnly`, `Secure` та коректний `SameSite`.
+- Регенеруйте сесію на login/logout.
+
+4. **Секрети й конфігурація**
+
+- Захищайте `.env`, ротуйте секрети, розділяйте середовища.
+- Ніколи не комітьте credentials у git.
+
+5. **Транспорт і заголовки**
+
+- Примусово використовуйте HTTPS.
+- Додавайте security headers (CSP, HSTS, X-Frame-Options тощо).
+
+6. **Гігієна залежностей і платформи**
+
+- Регулярно оновлюйте Laravel/PHP/пакети.
+- Моніторте вразливості й швидко встановлюйте патчі.
+
+7. **Захист від зловживань**
+
+- Налаштовуйте rate limiting для auth і чутливих ендпоінтів.
+- Логуйте та моніторте підозрілу активність.
+
+8. **Захист даних**
+
+- Паролі лише хешуйте, чутливі зворотні дані шифруйте.
+- Робіть резервні копії та перевіряйте процедури відновлення.
+
+Безпека — це не одна фіча, а багатошарова безперервна практика в коді та операціях.
+
+</details>
+
+<details>
+<summary>55. Що таке Gates і Policies?</summary>
+
+#### Laravel
+
+Gates і Policies — це механізми авторизації в Laravel.
+
+1. **Gates**
+
+- Closure-орієнтовані правила авторизації.
+- Підходять для простих ability-перевірок, не прив’язаних жорстко до моделі.
+
+2. **Policies**
+
+- Класовий підхід до авторизації, організований навколо моделі/ресурсу.
+- Методи на кшталт `view`, `create`, `update`, `delete` тощо.
+
+3. **Коли що використовувати**
+
+- **Gates** — для простих глобальних перевірок.
+- **Policies** — для model-centric авторизації та масштабованих систем.
+
+4. **Приклади використання**
+
+- `Gate::allows('export-reports')`
+- `$this->authorize('update', $post)`
+
+Gates дають легкі перевірки, Policies — структуровану авторизацію для великих застосунків.
+
+</details>
+
+<details>
+<summary>56. Як працюють Blade-директиви @can і @cannot?</summary>
+
+#### Laravel
+
+`@can` і `@cannot` — це Blade-директиви, які умовно рендерять HTML залежно від результату авторизації.
+
+1. **`@can`**
+
+- Показує контент, якщо користувач має право на вказану дію.
+
+```blade
+@can('update', $post)
+    <a href="{{ route('posts.edit', $post) }}">Edit</a>
+@endcan
+```
+
+2. **`@cannot`**
+
+- Показує контент, якщо користувач не має права.
+
+```blade
+@cannot('delete', $post)
+    <span>You cannot delete this post.</span>
+@endcannot
+```
+
+3. **Як вони обчислюються**
+
+- Усередині викликають логіку gate/policy.
+- Працюють у контексті поточного автентифікованого користувача.
+
+4. **Чому це корисно**
+
+- UI узгоджується з backend-правилами доступу.
+- Користувач не бачить дій, які йому недоступні.
+
+Ці директиви спрощують permission-aware рендеринг у Blade.
+
+</details>
+
+<details>
+<summary>57. Що таке multi-authentication і як його реалізувати?</summary>
+
+#### Laravel
+
+Multi-authentication — це підтримка кількох user-type/guard-контекстів в одному застосунку (наприклад, `web`, `admin`, `api`).
+
+1. **Типові сценарії**
+
+- Окремі портали для адміністраторів і клієнтів.
+- Доступ для співробітників і зовнішніх партнерів.
+- Різні auth-стратегії для різних каналів.
+
+2. **Як реалізувати**
+
+- Налаштувати кілька guards/providers у auth-конфігурації.
+- Використовувати middleware з конкретним guard: `auth:admin`, `auth:web`, `auth:sanctum`.
+- За потреби розділити login-flow/controllers/routes для кожного guard.
+
+3. **Приклад захисту маршруту**
+
+```php
+Route::middleware('auth:admin')->group(function () {
+    Route::get('/admin/dashboard', AdminDashboardController::class);
+});
+```
+
+4. **Best practices**
+
+- Ізолюйте route-групи й session-flow для кожного guard.
+- Явно фіксуйте authorization-правила для кожного типу користувача.
+
+Multi-auth дає чітке розділення ідентичностей і прав доступу між доменами застосунку.
+
+</details>
+
+<details>
+<summary>58. Порівняйте Laravel Sanctum і Laravel Passport.</summary>
+
+#### Laravel
+
+Sanctum і Passport обидва вирішують API-автентифікацію, але для різного рівня складності.
+
+1. **Sanctum**
+
+- Легковагова token-auth + SPA session-auth.
+- Personal access tokens і прості abilities.
+- Швидкий старт без OAuth2-складності.
+
+2. **Passport**
+
+- Повноцінний OAuth2 server.
+- Підтримує authorization code, client credentials, refresh tokens, scopes (та інші потоки).
+- Краще підходить для third-party delegated authorization.
+
+3. **Компроміс складності**
+
+- Sanctum: простіше й швидше для first-party застосунків.
+- Passport: потужніше, але важче в налаштуванні та супроводі.
+
+4. **Типовий вибір**
+
+- Sanctum: SPA/mobile + власний backend.
+- Passport: platform/ecosystem API з зовнішніми OAuth-клієнтами.
+
+Обирайте за вимогами протоколу автентифікації, а не лише за популярністю пакета.
+
+</details>
+
+<details>
+<summary>59. Коли обирати Sanctum замість Passport?</summary>
+
+#### Laravel
+
+Sanctum варто обирати, коли потрібна проста first-party автентифікація без повного OAuth2-стеку.
+
+1. **Добрі сценарії для Sanctum**
+
+- SPA + Laravel backend із session/cookie auth.
+- Mobile або внутрішні клієнти з personal access tokens.
+- Невеликі/середні API, де OAuth2 delegation не потрібен.
+
+2. **Чому саме Sanctum**
+
+- Швидша реалізація.
+- Нижча операційна складність.
+- Менше рухомих частин у керуванні токенами.
+
+3. **Коли цього недостатньо**
+
+- Коли стороннім застосункам потрібна делегована авторизація користувача.
+- Коли потрібні повні OAuth2 grant-флоу та можливості auth-server рівня стандарту.
+
+4. **Практичне правило**
+
+- За замовчуванням — Sanctum для first-party продуктів.
+- Переходьте на Passport, коли OAuth2-вимоги явно присутні.
+
+Sanctum — прагматичний дефолт для більшості Laravel API-продуктів.
+
+</details>
+
+<details>
+<summary>60. Як Laravel захищає від SQL Injection?</summary>
+
+#### Laravel
+
+Laravel знижує ризик SQL Injection завдяки parameter binding і безпечним query-абстракціям “за замовчуванням”.
+
+1. **Prepared statements / bindings**
+
+- Query Builder і Eloquent використовують bind-параметри замість конкатенації SQL-рядків.
+
+2. **Безпечні приклади**
+
+```php
+User::where('email', $email)->first();
+DB::table('orders')->where('status', $status)->get();
+```
+
+3. **Де ризик лишається**
+
+- Небезпечна ручна конкатенація raw SQL.
+
+```php
+// risk, якщо $input недовірений
+DB::select("SELECT * FROM users WHERE email = '$input'");
+```
+
+4. **Безпечний raw SQL**
+
+- Використовуйте placeholders і bindings:
+
+```php
+DB::select('SELECT * FROM users WHERE email = ?', [$input]);
+```
+
+5. **Best practices**
+
+- Віддавайте перевагу Eloquent/Query Builder.
+- Валідуйте ввід і не будуйте SQL із недовірених значень вручну.
+
+Laravel безпечний “із коробки”, але неправильне використання raw SQL може повернути injection-ризики.
+
+</details>
+
+<details>
+<summary>61. Як Laravel захищає від CSRF-атак?</summary>
+
+#### Laravel
+
+Laravel захищає від CSRF, вимагаючи валідний CSRF-токен для state-changing web-запитів.
+
+1. **Як це працює**
+
+- Генерується session-bound токен і зберігається на сервері.
+- Форма містить токен (`@csrf`).
+- Middleware перевіряє токен на POST/PUT/PATCH/DELETE запитах.
+
+2. **Використання в Blade**
+
+```blade
+<form method="POST" action="/profile">
+    @csrf
+    <!-- fields -->
+</form>
+```
+
+3. **AJAX/SPA**
+
+- Токен можна передавати в заголовку (наприклад, `X-CSRF-TOKEN`) для same-site session-flow.
+
+4. **Чому це ефективно**
+
+- Зловмисник не може згенерувати коректний session-bound токен із іншого сайту.
+
+5. **Важлива примітка**
+
+- CSRF головно стосується cookie/session browser-запитів, а не типових stateless bearer-token API.
+
+CSRF middleware — базовий рівень web-безпеки в Laravel.
+
+</details>
+
+<details>
+<summary>62. Як Laravel захищає від XSS-атак?</summary>
+
+#### Laravel
+
+Laravel запобігає XSS передусім через escaping output і безпечні шаблонні дефолти.
+
+1. **Blade за замовчуванням екранує**
+
+- `{{ $value }}` автоматично HTML-escape-иться.
+- Це не дає недовіреному HTML/JS виконатися.
+
+2. **Обережно з unescaped output**
+
+- `{!! $value !!}` рендерить raw HTML, тому має використовуватися лише для довіреного/санітайзеного контенту.
+
+3. **Додатковий захист**
+
+- Валідація та нормалізація вводу зменшують ризик потрапляння шкідливих payload.
+- CSP/security headers (через middleware/server config) додають defense-in-depth.
+
+4. **Frontend/API аспекти**
+
+- Повернення JSON зазвичай безпечніше, ніж рендер raw HTML-фрагментів.
+- Client-side рендер теж має екранувати недовірений контент.
+
+5. **Практичне правило**
+
+- Escape by default, sanitize коли HTML справді потрібен, і мінімізуйте raw-render шляхи.
+
+Laravel дає сильні дефолти, але безпечний output-handling у прикладному коді лишається критичним.
+
+</details>
+
+<details>
+<summary>63. Як працює шифрування в Laravel?</summary>
+
+#### Laravel
+
+Laravel надає симетричне шифрування через facade `Crypt` із використанням ключа застосунку.
+
+1. **Як це працює**
+
+- Використовується app key із environment/config.
+- Дані шифруються з перевіркою цілісності для виявлення підміни.
+- Розшифрування можливе лише тим самим ключем.
+
+2. **Типове використання**
+
+```php
+$encrypted = Crypt::encryptString('secret-value');
+$plain = Crypt::decryptString($encrypted);
+```
+
+3. **Де застосовується**
+
+- Чутливі значення, що зберігаються в БД/конфігурованих payload.
+- Внутрішні механізми фреймворку (наприклад, encrypted cookies, якщо увімкнено).
+
+4. **Best practices**
+
+- Тримайте `APP_KEY` секретним і стабільним для кожного середовища.
+- Ротуйте ключі обережно, з продуманою міграційною стратегією.
+- Не шифруйте те, що має бути хешованим (наприклад, паролі).
+
+Шифрування Laravel дає простий і безпечний захист “at rest” для чутливих, але зворотно-дешифровуваних даних.
+
+</details>
+
+<details>
+<summary>64. У чому різниця між автентифікацією та авторизацією?</summary>
+
+#### Laravel
+
+Автентифікація й авторизація пов’язані, але це різні рівні безпеки.
+
+1. **Автентифікація (Authentication)**
+
+- Відповідає на запитання: “Хто ви?”
+- Перевіряє особу (login/session/token).
+
+2. **Авторизація (Authorization)**
+
+- Відповідає на запитання: “Що вам дозволено робити?”
+- Перевіряє права/ability на конкретну дію або ресурс.
+
+3. **Відображення в Laravel**
+
+- Автентифікація: guards, providers, `auth` middleware.
+- Авторизація: gates, policies, `can` middleware, Blade-директиви `@can`.
+
+4. **Приклад**
+
+- Користувач може бути автентифікований (увійшов у систему), але не мати права видалити чужий пост.
+
+Автентифікація встановлює ідентичність, авторизація застосовує правила доступу.
+
+</details>
+
+<details>
+<summary>65. Як працює автентифікація в Laravel?</summary>
+
+#### Laravel
+
+Автентифікація в Laravel перевіряє особу користувача й зберігає цю ідентичність між запитами через guards і providers.
+
+1. **Ключові складові**
+
+- **Guards** визначають, як користувач автентифікується в запиті (session, token тощо).
+- **Providers** визначають, як отримуються користувачі (зазвичай Eloquent-модель).
+
+2. **Session-based flow (web)**
+
+- Користувач надсилає credentials.
+- Laravel валідує їх через provider.
+- У разі успіху ID користувача зберігається в сесії.
+- У наступних запитах поточний користувач резолвиться із session/cookie.
+
+3. **Token-based flow (API)**
+
+- Клієнт надсилає токен (наприклад, Sanctum/Passport bearer token).
+- Guard валідує токен і резолвить автентифікованого користувача.
+
+4. **Фреймворкові helper-и**
+
+- `Auth::attempt()`, `Auth::user()`, `auth()->check()`.
+- Middleware `auth` захищає маршрути.
+
+5. **Практична рекомендація**
+
+- Використовуйте вбудовані auth-скелети/пакети для типових сценаріїв.
+- Тримайте auth-логіку централізовано, уникайте власної crypto/session-реалізації без потреби.
+
+Автентифікація в Laravel guard-орієнтована й узгоджена для web та API точок входу.
+
+</details>
+
+<details>
+<summary>66. У чому різниця між API Resources і Transformers?</summary>
+
+#### Laravel
+
+Обидва підходи формують вихідні дані, але API Resources — це нативний стандарт Laravel, а Transformers — ширший архітектурний патерн або зовнішній шар мапінгу.
+
+1. **API Resources (вбудовано в Laravel)**
+
+- Офіційний механізм Laravel (`JsonResource`).
+- Тісна інтеграція з фреймворком і просте використання.
+- Найкращий дефолт для більшості Laravel API.
+
+2. **Transformers (загальний патерн / пакети)**
+
+- Архітектурний підхід для мапінгу domain-даних у response DTO.
+- Може бути реалізований кастомними класами або пакетами (наприклад, Fractal-подібні підходи).
+- Корисний, коли потрібен framework-agnostic або дуже кастомний transformation pipeline.
+
+3. **Практична різниця**
+
+- Resource = офіційний Laravel-підхід.
+- Transformer = ширший патерн, який може як використовувати Laravel-примітиви, так і бути незалежним від них.
+
+4. **Що обирати**
+
+- У Laravel-first застосунках: за замовчуванням API Resources.
+- Кастомний transformer-шар: коли межі домену/API вимагають додаткового відокремлення.
+
+Обидва підходи розв’язують проблему представлення даних; вибір залежить від складності архітектури та вимог до переносимості.
+
+</details>
+
+<details>
+<summary>67. Що таке API Resources у Laravel?</summary>
+
+#### Laravel
+
+API Resources — це шар трансформації, який перетворює моделі/колекції на узгоджену JSON-структуру відповіді.
+
+1. **Що вони роблять**
+
+- Контролюють форму вихідних даних.
+- Приховують внутрішні поля.
+- Передбачувано форматують і компонують пов’язані дані.
+
+2. **Приклад**
+
+```php
+final class UserResource extends JsonResource
+{
+    public function toArray($request): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+        ];
+    }
+}
+```
+
+3. **Використання**
+
+```php
+return new UserResource($user);
+return UserResource::collection($users);
+```
+
+4. **Чому це важливо**
+
+- Стабільні API-контракти.
+- Розділення persistence-моделі та transport-формату.
+- Простіше версіонування API й контроль політики відповіді.
+
+API Resources — нативний first-class підхід Laravel для стандартизації JSON API-відповідей.
+
+</details>
+
+<details>
+<summary>68. Як оптимізувати Eloquent-запити для продуктивності?</summary>
+
+#### Laravel
+
+Оптимізація Eloquent переважно зводиться до зменшення кількості запитів, обсягу даних і зайвої model-обробки.
+
+1. **Уникайте N+1**
+
+- Використовуйте `with()` / `load()` для relationships.
+
+2. **Вибирайте лише потрібні колонки**
+
+```php
+User::query()->select('id', 'name')->get();
+```
+
+3. **Робіть агрегації/перевірки існування на рівні SQL**
+
+- `count`, `sum`, `exists`, `withCount` замість завантаження повних колекцій.
+
+4. **Ефективно обробляйте великі набори**
+
+- Використовуйте `chunkById`, `lazyById`, `cursor` для memory-safe ітерації.
+
+5. **Індексна стратегія**
+
+- Додавайте релевантні індекси для частих фільтрів/сортувань/join.
+
+6. **Кешуйте там, де доречно**
+
+- Кешуйте стабільні або дорогі результати запитів.
+
+7. **Вимірюйте та профілюйте**
+
+- Використовуйте Telescope/Debugbar/query logs і `EXPLAIN` плани БД.
+
+8. **Для складних звітних маршрутів використовуйте query builder/raw SQL**
+
+- Не кожен важкий запит зручно моделювати лише високорівневим ORM-підходом.
+
+Оптимізація має бути measurement-driven: спершу міряйте, потім покращуйте найкритичніші місця.
+
+</details>
+
+<details>
+<summary>69. Що таке soft deletes?</summary>
+
+#### Laravel
+
+Soft deletes позначають запис як видалений, але фізично не видаляють його з таблиці.
+
+1. **Як це працює**
+
+- Використовується колонка `deleted_at`.
+- Під час видалення встановлюється `deleted_at`, а рядок лишається в БД.
+- Дефолтні запити не повертають soft-deleted записи.
+
+2. **Увімкнення в моделі**
+
+```php
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Post extends Model
+{
+    use SoftDeletes;
+}
+```
+
+3. **Ключові helper-методи**
+
+- `withTrashed()` — включити видалені записи.
+- `onlyTrashed()` — тільки видалені.
+- `restore()` — відновити запис.
+- `forceDelete()` — видалити назавжди.
+
+4. **Чому це корисно**
+
+- Можливість відновлення даних.
+- Краща “аудитність” і безпечніший робочий процес при випадкових видаленнях.
+
+Soft deletes — практичний компроміс між семантикою видалення та відновлюваністю даних.
+
+</details>
+
+<details>
+<summary>70. Що таке database seeding?</summary>
+
+#### Laravel
+
+Database seeding — це процес заповнення бази даних наперед визначеними або згенерованими даними.
+
+1. **Призначення**
+
+- Підготувати застосунок до роботи з необхідними стартовими даними.
+- Дати реалістичні набори даних для development/testing.
+
+2. **Як запускається**
+
+- Класи сідів виконуються через Artisan.
+
+```bash
+php artisan db:seed
+php artisan db:seed --class=UserSeeder
+```
+
+3. **Типовий процес**
+
+- `DatabaseSeeder` оркеструє запуск інших сідів.
+- Factories використовуються для масового створення синтетичних записів.
+
+4. **Best practices**
+
+- Критичні довідкові дані робіть детермінованими.
+- У production уникайте руйнівної логіки сідів, якщо це не заплановано явно.
+- Версіонуйте сіди разом із кодовою базою.
+
+Seeding забезпечує відтворюваність середовищ і готовність системи до розробки чи тестування.
+
+</details>
+
+<details>
+<summary>71. Як працюють factories у сучасному Laravel?</summary>
+
+#### Laravel
+
+У сучасному Laravel factories є class-based і model-centric, зазвичай розміщуються в `database/factories`.
+
+1. **Factory на основі definition**
+
+- Метод `definition()` повертає дефолтні fake-атрибути.
+
+```php
+final class UserFactory extends Factory
+{
+    public function definition(): array
+    {
+        return [
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'password' => bcrypt('password'),
+        ];
+    }
+}
+```
+
+2. **States**
+
+- Іменовані варіанти для конкретних сценаріїв.
+
+```php
+public function admin(): static
+{
+    return $this->state(fn () => ['is_admin' => true]);
+}
+```
+
+3. **Використання**
+
+```php
+User::factory()->admin()->count(3)->create();
+User::factory()->make(); // не зберігає в БД
+```
+
+4. **Робота зі зв’язками**
+
+- Factories підтримують створення relations через `has()`, `for()` та callbacks.
+
+Factories роблять генерацію тестових/службових даних виразною, композиційною та контрольованою.
+
+</details>
+
+<details>
+<summary>72. Що таке seeders і factories?</summary>
+
+#### Laravel
+
+Seeders і factories допомагають швидко генерувати та заповнювати дані для розробки, тестів і початкового стану системи.
+
+1. **Seeders**
+
+- Класи, які наповнюють БД визначеними наборами даних.
+- Підходять для базових довідкових даних (ролі, права, налаштування).
+
+2. **Factories**
+
+- “Шаблони” для генерації model-екземплярів із fake або кастомними даними.
+- Зручні для тестів і demo/dev-даних.
+
+3. **Як працюють разом**
+
+- Seeder викликає factories для швидкого створення великої кількості записів.
+
+```php
+User::factory()->count(50)->create();
+```
+
+4. **Типові сценарії**
+
+- Bootstrap локального середовища.
+- Підготовка даних для автотестів.
+- Наповнення staging/demo середовищ.
+
+Seeders визначають, *що* вставляти, а factories визначають, *як* генерувати дані моделей.
+
+</details>
+
+<details>
+<summary>73. Як генерувати й відкочувати міграції?</summary>
+
+#### Laravel
+
+Laravel надає Artisan-команди для створення міграцій і керування їх виконанням.
+
+1. **Генерація міграції**
+
+```bash
+php artisan make:migration create_orders_table
+php artisan make:migration add_status_to_orders_table --table=orders
+```
+
+2. **Запуск міграцій**
+
+```bash
+php artisan migrate
+```
+
+3. **Відкат останнього batch**
+
+```bash
+php artisan migrate:rollback
+```
+
+4. **Відкат кількох кроків**
+
+```bash
+php artisan migrate:rollback --step=3
+```
+
+5. **Інші корисні команди**
+
+- `php artisan migrate:reset` (відкатити все)
+- `php artisan migrate:refresh` (reset + migrate)
+- `php artisan migrate:fresh` (видалити всі таблиці + migrate)
+
+Команди rollback/refresh потрібно застосовувати обережно, особливо в production-середовищі.
+
+</details>
+
+<details>
+<summary>74. Що таке міграції і чому вони важливі?</summary>
+
+#### Laravel
+
+Міграції — це version-controlled PHP-файли, які описують зміни схеми бази даних у часі.
+
+1. **Що роблять міграції**
+
+- Створюють/змінюють/видаляють таблиці, колонки, індекси, constraints.
+- Роблять зміни схеми відтворюваними в усіх середовищах.
+
+2. **Чому це важливо**
+
+- Командна робота над схемою через code review.
+- Детерміновані deploy-и й rollback-и.
+- Підхід “інфраструктура як код” для еволюції БД.
+
+3. **Типова структура міграції**
+
+- `up()` застосовує зміни.
+- `down()` відкочує зміни.
+
+4. **Операційна цінність**
+
+- Простіший онбординг і CI-налаштування.
+- Менше “works on my machine” розбіжностей схеми БД.
+
+Міграції — основа підтримуваного життєвого циклу схеми в Laravel.
+
+</details>
+
+<details>
+<summary>75. Що таке транзакції бази даних і як їх використовувати?</summary>
+
+#### Laravel
+
+Транзакція бази даних об’єднує кілька операцій в одну атомарну дію: або виконуються всі, або всі відкочуються.
+
+1. **Навіщо потрібні транзакції**
+
+- Зберігають цілісність даних при пов’язаних записах.
+- Запобігають частковим змінам, якщо виникла помилка.
+
+2. **Використання в Laravel**
+
+```php
+DB::transaction(function () use ($orderData) {
+    $order = Order::create($orderData);
+    Inventory::reserveForOrder($order);
+    Payment::captureForOrder($order);
+});
+```
+
+3. **Ручне керування (за потреби)**
+
+```php
+DB::beginTransaction();
+
+try {
+    // operations
+    DB::commit();
+} catch (Throwable $e) {
+    DB::rollBack();
+    throw $e;
+}
+```
+
+4. **Best practices**
+
+- Тримайте транзакцію короткою й швидкою.
+- Уникайте довгих зовнішніх HTTP-викликів усередині транзакції.
+- За потреби комбінуйте з row locking для конкурентно-чутливих сценаріїв.
+
+Транзакції критично важливі для надійних фінансових, складських і багатокрокових бізнес-процесів.
+
+</details>
+
+<details>
+<summary>76. Які aggregate-методи доступні в query builder?</summary>
+
+#### Laravel
+
+Laravel Query Builder надає стандартні SQL-агрегації у вигляді helper-методів.
+
+1. **Основні aggregate-методи**
+
+- `count()`
+- `sum($column)`
+- `avg($column)` / `average($column)`
+- `min($column)`
+- `max($column)`
+
+2. **Приклади**
+
+```php
+$totalUsers = DB::table('users')->count();
+$totalRevenue = DB::table('orders')->sum('amount');
+$avgOrder = DB::table('orders')->avg('amount');
+$firstDate = DB::table('orders')->min('created_at');
+$latestDate = DB::table('orders')->max('created_at');
+```
+
+3. **Разом із групуванням**
+
+- Комбінуйте `selectRaw(...)` + `groupBy(...)` для агрегацій по групах.
+
+4. **Чому це корисно**
+
+- Ефективні обчислення на стороні БД.
+- Не потрібно переносити зайві рядки в пам’ять застосунку.
+
+Агрегації — базовий інструмент для дашбордів, аналітики та бізнес-метрик API.
+
+</details>
+
+<details>
+<summary>77. Як вивести raw SQL-запити в Laravel?</summary>
+
+#### Laravel
+
+У Laravel є кілька способів переглянути SQL і bindings залежно від глибини дебагу.
+
+1. **`toSql()` + `getBindings()`**
+
+```php
+$query = User::where('email', 'like', '%@example.com%');
+
+$sql = $query->toSql();
+$bindings = $query->getBindings();
+```
+
+2. **`toRawSql()` (сучасний Laravel)**
+
+- Повертає SQL із підставленими bindings для зручнішого читання.
+
+```php
+$sql = User::where('id', 5)->toRawSql();
+```
+
+3. **Слухач запитів**
+
+```php
+DB::listen(function ($query) {
+    logger()->debug($query->sql, $query->bindings);
+});
+```
+
+4. **Інструменти**
+
+- Laravel Telescope / Debugbar можуть показувати виконані запити та їхній час.
+
+Ці підходи варто використовувати в development/debugging, а не як постійну production-вивідну логіку.
+
+</details>
+
+<details>
+<summary>78. Поясніть query builder у Laravel.</summary>
+
+#### Laravel
+
+Laravel Query Builder — це fluent API для побудови SQL-запитів, який працює поверх PDO і нижче рівня Eloquent-моделей.
+
+1. **Що це таке**
+
+- БД-агностичний інтерфейс запитів через `DB::table(...)`.
+- Підтримує select, joins, where-умови, group, order, pagination, insert/update/delete.
+
+2. **Приклад**
+
+```php
+$users = DB::table('users')
+    ->select('id', 'name', 'email')
+    ->where('is_active', true)
+    ->orderByDesc('created_at')
+    ->limit(20)
+    ->get();
+```
+
+3. **Чому його використовують**
+
+- Дає більше контролю над SQL, ніж високорівневий ORM-підхід.
+- Добре підходить для звітних запитів і складних join-конструкцій.
+- Зберігає безпечну роботу з параметрами через bindings.
+
+4. **Eloquent vs Query Builder**
+
+- Eloquent: model-centric, багаті domain-можливості.
+- Query Builder: table/query-centric, нижчий рівень і часто “легший”.
+
+Query Builder — базовий fluent-шар для точного SQL-контролю в Laravel.
+
+</details>
+
+<details>
+<summary>79. Що таке chunking і коли використовувати chunk() або lazy()?</summary>
+
+#### Laravel
+
+Chunking — це обробка результатів запиту невеликими пакетами, а не завантаження всього набору в пам’ять одразу.
+
+1. **`chunk()`**
+
+- Отримує записи фіксованими порціями й виконує callback для кожного chunk.
+
+```php
+User::query()->chunk(1000, function ($users) {
+    foreach ($users as $user) {
+        // process
+    }
+});
+```
+
+2. **`lazy()`**
+
+- Внутрішньо теж працює через порції, але назовні дає єдиний lazy-потік.
+- Зручніший для pipeline-style коду.
+
+```php
+User::query()->lazy(1000)->each(function (User $user) {
+    // process
+});
+```
+
+3. **Коли що обирати**
+
+- `chunk()` — коли потрібна явна обробка “пакет за пакетом”.
+- `lazy()` — коли потрібен гнучкий потоковий fluent-процес.
+
+4. **Важлива примітка**
+
+- Якщо ви оновлюєте записи під час ітерації, віддавайте перевагу ID-орієнтованим варіантам (`chunkById`, `lazyById`), щоб уникнути пропусків/дублів.
+
+Chunking — базова практика для обробки великих наборів даних із контрольованим споживанням пам’яті.
+
+</details>
+
+<details>
+<summary>80. Яке призначення методу cursor()?</summary>
+
+#### Laravel
+
+`cursor()` повертає lazy-ітератор результатів, що дозволяє проходити записи по одному з мінімальним використанням пам’яті.
+
+1. **Навіщо використовувати**
+
+- Щоб не завантажувати весь результат запиту в RAM.
+- Щоб ефективно обробляти великі таблиці.
+
+2. **Приклад**
+
+```php
+foreach (User::where('is_active', true)->cursor() as $user) {
+    // process user
+}
+```
+
+3. **Характеристики**
+
+- Ітерація на базі генератора.
+- Добре підходить для read/process-пайплайнів.
+- Ефективний у queue/long-running job сценаріях.
+
+4. **Коли це не ідеально**
+
+- Якщо потрібен випадковий доступ до всіх результатів одразу.
+- Якщо потрібна важка eager-завантажена графова структура для всього набору.
+
+`cursor()` — ключовий інструмент масштабованої обробки записів “рядок за рядком”.
+
+</details>
+
+<details>
+<summary>81. Що таке Lazy Collections?</summary>
+
+#### Laravel
+
+Lazy Collections обробляють елементи як потік (на базі генераторів), а не завантажують усі дані в пам’ять одразу.
+
+1. **Ключова властивість**
+
+- Пам’яткоефективна ітерація великих наборів даних.
+
+2. **Як це працює**
+
+- Елементи генеруються та обробляються по одному.
+- Ланцюжок трансформацій виконується ліниво, під час ітерації.
+
+3. **Типові джерела**
+
+- `lazy()` у запитах.
+- `cursor()` в Eloquent/query builder.
+- Кастомні генератори, обгорнуті в `LazyCollection`.
+
+4. **Коли використовувати**
+
+- Скрипти міграції даних.
+- Великі експорт/імпорт процеси.
+- Фонові задачі з мільйонами рядків.
+
+5. **Компроміс**
+
+- Частина операцій колекцій, що вимагає повної матеріалізації, менш зручна для lazy-підходу.
+
+Lazy Collections ідеальні там, де безпека пам’яті важливіша за random access.
+
+</details>
+
+<details>
+<summary>82. У чому різниця між масивами й колекціями?</summary>
+
+#### Laravel
+
+Масиви — це нативна структура даних PHP, а колекції — об’єктні обгортки з fluent API для трансформацій.
+
+1. **Масиви**
+
+- Швидка нативна структура.
+- Доступ через синтаксис мови.
+- Менше високорівневих інструментів трансформації “з коробки”.
+
+2. **Колекції**
+
+- Об’єкти `Illuminate\Support\Collection`.
+- Chainable-методи: `map`, `filter`, `reduce`, `sortBy`, `groupBy` тощо.
+- Виразніші й читабельніші для складних пайплайнів обробки даних.
+
+3. **Приклад**
+
+```php
+$names = collect($users)
+    ->filter(fn ($u) => $u->is_active)
+    ->pluck('name')
+    ->values();
+```
+
+4. **Коли що використовувати**
+
+- Масиви — для простих, низькорівневих операцій.
+- Колекції — для читабельності та композиційних трансформацій.
+
+Колекції дають невеликий оверхед, але значно кращу ергономіку в прикладному коді.
+
+</details>
+
+<details>
+<summary>83. Що таке Eloquent Collections?</summary>
 
 #### Laravel
 
@@ -108,7 +2816,7 @@ Eloquent Collections поєднують ORM-обізнаність із функ
 </details>
 
 <details>
-<summary>2. Які головні переваги Laravel порівняно з іншими PHP-фреймворками?</summary>
+<summary>84. Які головні переваги Laravel порівняно з іншими PHP-фреймворками?</summary>
 
 #### Laravel
 
@@ -146,7 +2854,7 @@ Laravel часто обирають тоді, коли команді потрі
 </details>
 
 <details>
-<summary>3. Як Laravel дотримується архітектури MVC?</summary>
+<summary>85. Як Laravel дотримується архітектури MVC?</summary>
 
 #### Laravel
 
@@ -181,7 +2889,7 @@ Laravel також підтримує service-класи, actions, repositories 
 </details>
 
 <details>
-<summary>4. Опишіть життєвий цикл запиту в застосунку Laravel.</summary>
+<summary>86. Опишіть життєвий цикл запиту в застосунку Laravel.</summary>
 
 #### Laravel
 
@@ -228,7 +2936,7 @@ Laravel також підтримує service-класи, actions, repositories 
 </details>
 
 <details>
-<summary>5. Що таке сервісний контейнер Laravel?</summary>
+<summary>87. Що таке сервісний контейнер Laravel?</summary>
 
 #### Laravel
 
@@ -265,7 +2973,7 @@ Laravel також підтримує service-класи, actions, repositories 
 </details>
 
 <details>
-<summary>6. Поясніть різницю між binding, singleton binding і resolving у сервісному контейнері.</summary>
+<summary>88. Поясніть різницю між binding, singleton binding і resolving у сервісному контейнері.</summary>
 
 #### Laravel
 
@@ -307,7 +3015,7 @@ $gateway = app()->make(PaymentGateway::class);
 </details>
 
 <details>
-<summary>7. Що таке contextual binding і коли його варто використовувати?</summary>
+<summary>89. Що таке contextual binding і коли його варто використовувати?</summary>
 
 #### Laravel
 
@@ -346,7 +3054,7 @@ Contextual binding корисний тоді, коли однієї глобал
 </details>
 
 <details>
-<summary>8. Що таке Service Providers і яка їхня мета?</summary>
+<summary>90. Що таке Service Providers і яка їхня мета?</summary>
 
 #### Laravel
 
@@ -381,7 +3089,7 @@ Service Providers — фактично composition root застосунку н�
 </details>
 
 <details>
-<summary>9. У чому різниця між registering і booting у service provider?</summary>
+<summary>91. У чому різниця між registering і booting у service provider?</summary>
 
 #### Laravel
 
@@ -421,7 +3129,7 @@ public function boot(): void
 </details>
 
 <details>
-<summary>10. Що таке Laravel Contracts?</summary>
+<summary>92. Що таке Laravel Contracts?</summary>
 
 #### Laravel
 
@@ -463,7 +3171,7 @@ Contracts — один із ключових будівельних блоків
 </details>
 
 <details>
-<summary>11. У чому різниця між Contract і Facade?</summary>
+<summary>93. У чому різниця між Contract і Facade?</summary>
 
 #### Laravel
 
@@ -501,7 +3209,7 @@ Contracts і Facades пов’язані з сервісами Laravel, але �
 </details>
 
 <details>
-<summary>12. Поясніть різницю між Facades і helper-функціями в Laravel.</summary>
+<summary>94. Поясніть різницю між Facades і helper-функціями в Laravel.</summary>
 
 #### Laravel
 
@@ -538,7 +3246,7 @@ Contracts і Facades пов’язані з сервісами Laravel, але �
 </details>
 
 <details>
-<summary>13. Як працює Dependency Injection у Laravel?</summary>
+<summary>95. Як працює Dependency Injection у Laravel?</summary>
 
 #### Laravel
 
@@ -587,7 +3295,7 @@ $this->app->bind(PaymentGateway::class, StripeGateway::class);
 </details>
 
 <details>
-<summary>14. Як Laravel використовує IoC (Inversion of Control)?</summary>
+<summary>96. Як Laravel використовує IoC (Inversion of Control)?</summary>
 
 #### Laravel
 
@@ -618,7 +3326,7 @@ IoC у Laravel — архітектурна основа для DI, contracts і
 </details>
 
 <details>
-<summary>15. Що таке middleware у Laravel?</summary>
+<summary>97. Що таке middleware у Laravel?</summary>
 
 #### Laravel
 
@@ -652,7 +3360,7 @@ Middleware дає змогу тримати контролери сфокусо�
 </details>
 
 <details>
-<summary>16. Як зареєструвати та призначити middleware?</summary>
+<summary>98. Як зареєструвати та призначити middleware?</summary>
 
 #### Laravel
 
@@ -693,7 +3401,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 </details>
 
 <details>
-<summary>17. Як middleware працює з параметрами?</summary>
+<summary>99. Як middleware працює з параметрами?</summary>
 
 #### Laravel
 
@@ -735,7 +3443,7 @@ public function handle(Request $request, Closure $next, string $role): Response
 </details>
 
 <details>
-<summary>18. Що таке route groups, prefixes і middleware groups?</summary>
+<summary>100. Що таке route groups, prefixes і middleware groups?</summary>
 
 #### Laravel
 
@@ -780,7 +3488,7 @@ Route::name('admin.')->group(function () {
 </details>
 
 <details>
-<summary>19. Що таке route model binding?</summary>
+<summary>101. Що таке route model binding?</summary>
 
 #### Laravel
 
@@ -818,7 +3526,7 @@ Route model binding — одна з найкорисніших конвенці�
 </details>
 
 <details>
-<summary>20. Поясніть implicit vs explicit route model binding.</summary>
+<summary>102. Поясніть implicit vs explicit route model binding.</summary>
 
 #### Laravel
 
@@ -858,7 +3566,7 @@ Implicit = автоматична прив’язка за конвенцією.
 </details>
 
 <details>
-<summary>21. Що таке rate limiting у Laravel і як він працює?</summary>
+<summary>103. Що таке rate limiting у Laravel і як він працює?</summary>
 
 #### Laravel
 
@@ -897,7 +3605,7 @@ RateLimiter::for('api', function (Request $request) {
 </details>
 
 <details>
-<summary>22. Що таке invokable controllers?</summary>
+<summary>104. Що таке invokable controllers?</summary>
 
 #### Laravel
 
@@ -938,7 +3646,7 @@ Invokable controllers — практичний спосіб тримати HTTP-
 </details>
 
 <details>
-<summary>23. Що таке Single Action Controllers?</summary>
+<summary>105. Що таке Single Action Controllers?</summary>
 
 #### Laravel
 
@@ -971,7 +3679,7 @@ Single Action Controllers — це передусім архітектурний
 </details>
 
 <details>
-<summary>24. У чому різниця між Resource Controllers і API Resource Controllers?</summary>
+<summary>106. У чому різниця між Resource Controllers і API Resource Controllers?</summary>
 
 #### Laravel
 
@@ -1001,7 +3709,7 @@ Single Action Controllers — це передусім архітектурний
 </details>
 
 <details>
-<summary>25. Як створювати кастомні Artisan-команди?</summary>
+<summary>107. Як створювати кастомні Artisan-команди?</summary>
 
 #### Laravel
 
@@ -1049,7 +3757,7 @@ php artisan billing:sync --dry-run
 </details>
 
 <details>
-<summary>26. Що таке macros і коли вони корисні?</summary>
+<summary>108. Що таке macros і коли вони корисні?</summary>
 
 #### Laravel
 
@@ -1086,7 +3794,7 @@ Macros найкраще підходять для невеликих, часто
 </details>
 
 <details>
-<summary>27. Що таке Actions в архітектурі Laravel і коли їх використовувати?</summary>
+<summary>109. Що таке Actions в архітектурі Laravel і коли їх використовувати?</summary>
 
 #### Laravel
 
@@ -1128,7 +3836,7 @@ Actions покращують модульність і роблять бізне
 </details>
 
 <details>
-<summary>28. Поясніть Repository Pattern і його переваги.</summary>
+<summary>110. Поясніть Repository Pattern і його переваги.</summary>
 
 #### Laravel
 
@@ -1162,7 +3870,7 @@ Repository Pattern цінний тоді, коли реально зменшує
 </details>
 
 <details>
-<summary>29. Що таке Traits у PHP і як вони використовуються в Laravel?</summary>
+<summary>111. Що таке Traits у PHP і як вони використовуються в Laravel?</summary>
 
 #### Laravel
 
@@ -1199,7 +3907,7 @@ Traits — практичний механізм реюзу, який широк
 </details>
 
 <details>
-<summary>30. У чому різниця між Laravel і Lumen, і чи актуальний Lumen у 2026 році?</summary>
+<summary>112. У чому різниця між Laravel і Lumen, і чи актуальний Lumen у 2026 році?</summary>
 
 #### Laravel
 
@@ -1234,7 +3942,7 @@ Laravel і Lumen мають спільне походження, але оріє
 </details>
 
 <details>
-<summary>31. Що таке Eloquent ORM?</summary>
+<summary>113. Що таке Eloquent ORM?</summary>
 
 #### Laravel
 
@@ -1273,7 +3981,7 @@ Eloquent — базовий data-access шар у більшості Laravel-з�
 </details>
 
 <details>
-<summary>32. Що таке Eloquent Models?</summary>
+<summary>114. Що таке Eloquent Models?</summary>
 
 #### Laravel
 
@@ -1317,7 +4025,7 @@ Eloquent-моделі — ключові будівельні блоки databas
 </details>
 
 <details>
-<summary>33. Поясніть one-to-one, one-to-many, many-to-many і polymorphic relationships.</summary>
+<summary>115. Поясніть one-to-one, one-to-many, many-to-many і polymorphic relationships.</summary>
 
 #### Laravel
 
@@ -1354,7 +4062,7 @@ Eloquent-зв’язки визначають, як моделі пов’яза
 </details>
 
 <details>
-<summary>34. Що таке polymorphic relationships і коли їх використовувати?</summary>
+<summary>116. Що таке polymorphic relationships і коли їх використовувати?</summary>
 
 #### Laravel
 
@@ -1391,7 +4099,7 @@ Polymorphic relationships дозволяють одній моделі бути 
 </details>
 
 <details>
-<summary>35. Що таке eager loading?</summary>
+<summary>117. Що таке eager loading?</summary>
 
 #### Laravel
 
@@ -1420,7 +4128,7 @@ Eager loading — одна з базових практик оптимізаці
 </details>
 
 <details>
-<summary>36. Що таке проблема N+1 і як її вирішити?</summary>
+<summary>118. Що таке проблема N+1 і як її вирішити?</summary>
 
 #### Laravel
 
@@ -1459,7 +4167,7 @@ $posts = Post::with('author')->get();
 </details>
 
 <details>
-<summary>37. Що таке lazy eager loading?</summary>
+<summary>119. Що таке lazy eager loading?</summary>
 
 #### Laravel
 
@@ -1495,7 +4203,7 @@ Lazy eager loading — практичний компроміс між гнучк
 </details>
 
 <details>
-<summary>38. Що таке global scopes і local scopes?</summary>
+<summary>120. Що таке global scopes і local scopes?</summary>
 
 #### Laravel
 
@@ -1534,7 +4242,7 @@ Scopes покращують узгодженість і прибирають д�
 </details>
 
 <details>
-<summary>39. Що таке query scopes?</summary>
+<summary>121. Що таке query scopes?</summary>
 
 #### Laravel
 
@@ -1576,7 +4284,7 @@ Query scopes — ключовий інструмент для виразних �
 </details>
 
 <details>
-<summary>40. Що таке accessors і mutators?</summary>
+<summary>122. Що таке accessors і mutators?</summary>
 
 #### Laravel
 
@@ -1620,7 +4328,7 @@ protected function title(): Attribute
 </details>
 
 <details>
-<summary>41. Що таке casts в Eloquent?</summary>
+<summary>123. Що таке casts в Eloquent?</summary>
 
 #### Laravel
 
@@ -1663,7 +4371,7 @@ Casts — фундаментальна можливість для чистог�
 </details>
 
 <details>
-<summary>42. Що таке Attribute objects у сучасному Laravel?</summary>
+<summary>124. Що таке Attribute objects у сучасному Laravel?</summary>
 
 #### Laravel
 
@@ -1699,5 +4407,70 @@ protected function name(): Attribute
 - Кастомне форматування, нормалізація, шифрування або мапінг на value object для конкретних атрибутів.
 
 Attribute objects — рекомендований сучасний патерн для accessors/mutators у поточних версіях Laravel.
+
+</details>
+
+<details>
+<summary>125. Як реалізувати WebSockets у Laravel?</summary>
+
+#### Laravel
+
+У Laravel WebSockets зазвичай реалізують через зв’язку Broadcasting + Reverb (або сумісну websocket-інфраструктуру) + Echo на фронтенді.
+
+1. **Налаштування backend**
+
+- Сконфігурувати broadcasting driver і websocket server.
+- Описати broadcastable events та авторизацію каналів.
+
+2. **Налаштування frontend**
+
+- Ініціалізувати Laravel Echo з websocket-конектором.
+- Підписатися на канали й слухати події.
+
+3. **Безпека каналів**
+
+- Для захищених потоків використовувати private/presence канали.
+
+4. **Операційні аспекти**
+
+- Масштабувати websocket-інстанси під навантаження.
+- Моніторити кількість з’єднань, частоту повідомлень і reconnect-поведінку.
+
+5. **Типові сценарії**
+
+- Realtime-сповіщення, чат, колаборація, live-дашборди.
+
+У сучасному Laravel зв’язка Reverb + Echo є стандартним first-party шляхом для WebSocket-функціоналу.
+
+</details>
+
+<details>
+<summary>126. У чому різниця між feature tests і unit tests?</summary>
+
+#### Laravel
+
+Feature-тести й unit-тести відрізняються насамперед рівнем охоплення та глибиною інтеграції.
+
+1. **Unit tests**
+
+- Перевіряють невеликий ізольований фрагмент логіки (клас/метод).
+- Зазвичай мають мінімум framework-контексту.
+- Залежності часто мокаються.
+
+2. **Feature tests**
+
+- Перевіряють поведінку системи через фреймворкові межі.
+- Часто охоплюють маршрути, middleware, валідацію, БД, auth і структуру відповіді.
+
+3. **Коли що застосовувати**
+
+- Unit tests: складна чиста бізнес-логіка.
+- Feature tests: ключові user/API-флоу та інтеграційна впевненість.
+
+4. **Практичний баланс**
+
+- Комбінуйте обидва підходи: unit для швидких точкових перевірок, feature для end-to-end поведінки.
+
+Unit-тест відповідає на питання “чи правильно працює цей компонент?”, feature-тест — “чи правильно працює сценарій у системі?”.
 
 </details>
