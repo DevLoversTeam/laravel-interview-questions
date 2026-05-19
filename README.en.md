@@ -6,7 +6,7 @@
   Laravel <img src="./assets/laravel.svg" width="40" height="40" alt="Laravel logo"/>
 </h1>
 
-<h2>Найпопулярніші питання та відповіді на співбесідах з Laravel</h2>
+<h2>Most Popular Laravel Interview Questions and Answers</h2>
 
 <details>
 <summary>1. What is Laravel and why is it used?</summary>
