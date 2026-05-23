@@ -3773,3 +3773,2509 @@ Como los workers de Octane son de larga vida, el estado mutable puede filtrarse 
 Octane requiere una disciplina de estado más estricta que apps PHP-FPM tradicionales con aislamiento por solicitud.
 
 </details>
+
+<details>
+<summary>102. ¿Cómo optimizas una aplicación Laravel para producción?</summary>
+
+#### Laravel
+
+La optimización para producción combina optimización en build-time, tuning de runtime y observabilidad.
+
+1. **Construir y cachear metadatos del framework**
+
+- Usa `config:cache`, `route:cache`, `view:cache`, `event:cache` donde aplique.
+
+2. **Usar OPcache y configuración PHP adecuada**
+
+- Habilita y ajusta OPcache para cargas de trabajo de producción.
+
+3. **Arquitectura de colas y asíncrona**
+
+- Mueve operaciones pesadas a colas.
+- Ajusta concurrencia/timeouts/reintentos de workers.
+
+4. **Rendimiento de base de datos**
+
+- Elimina consultas N+1.
+- Añade índices adecuados y usa `EXPLAIN`.
+- Optimiza consultas hot y tamaño de payload.
+
+5. **Estrategia de caché**
+
+- Usa Redis/Memcached para caché de aplicación.
+- Define reglas de invalidación y warm-up de hot keys.
+
+6. **Optimización HTTP/perímetro**
+
+- Usa CDN/reverse proxy cuando corresponda.
+- Habilita compresión y headers de seguridad.
+
+7. **Monitoreo y confiabilidad**
+
+- Logs, métricas y trazas centralizadas.
+- Alertas por latencia, tasa de error, queue lag y failed jobs.
+
+8. **Higiene de despliegue**
+
+- Flujo de despliegue sin downtime.
+- Ejecuta migraciones de forma segura.
+- Mantén dependencias y framework parchados.
+
+El rendimiento en producción es un proceso continuo: medir, ajustar, verificar y repetir.
+
+</details>
+
+<details>
+<summary>103. ¿Cómo optimizas el autoloading de Composer?</summary>
+
+#### Laravel
+
+La optimización autoload de Composer reduce overhead de carga de clases, especialmente в producción.
+
+1. **Generar class map optimizado**
+
+```bash
+composer install --no-dev --optimize-autoloader
+```
+
+о
+
+```bash
+composer dump-autoload -o
+```
+
+2. **Autoritativo en producción (opcional)**
+
+```bash
+composer dump-autoload -o -a
+```
+
+- `-a` (`--classmap-authoritative`) obliga resolver solo por class map (más rápido, pero exige mapeo completo correcto).
+
+3. **APCu autoloader (opcional)**
+
+- En algunos entornos, `--apcu-autoloader` puede reducir búsquedas repetidas.
+
+4. **Buenas prácticas**
+
+- Evita archivos/autoloads innecesarios.
+- Mantén namespaces PSR-4 limpios y consistentes.
+- Usa `--no-dev` en builds de producción.
+
+El autoload optimizado reduce trabajo de bootstrap y mejora tiempos de respuesta de Laravel en producción.
+
+</details>
+
+<details>
+<summary>104. ¿Qué es OPcache y por qué es importante?</summary>
+
+#### Laravel
+
+OPcache es una extensión de PHP que cachea bytecode compilado de scripts en memoria compartida.
+
+1. **Qué problema resuelve**
+
+- Evita recompilar archivos PHP en cada solicitud.
+
+2. **Por qué importa**
+
+- Menor uso de CPU.
+- Manejo de solicitudes más rápido.
+- Mejor throughput y menor latencia.
+
+3. **Relevancia en producción**
+
+- Esencial para cualquier despliegue serio de PHP/Laravel.
+- Funciona especialmente bien con artefactos de despliegue estables y autoloading optimizado.
+
+4. **Nota operativa**
+
+- Ajusta configuración de memoria y validación según modelo de despliegue.
+- Asegura estrategia de reset/reinicio de caché durante despliegues.
+
+OPcache es una de las funciones base de rendimiento más importantes en producción PHP.
+
+</details>
+
+<details>
+<summary>105. ¿Qué es el compilador JIT en PHP 8+?</summary>
+
+#### Laravel
+
+El compilador JIT (Just-In-Time) en PHP 8+ puede compilar opcodes seleccionados a código máquina nativo en runtime.
+
+1. **En qué se diferencia de OPcache**
+
+- OPcache cachea bytecode.
+- JIT además puede compilar rutas de ejecución calientes a código máquina.
+
+2. **Objetivo principal**
+
+- Workloads intensivos en CPU con cálculos pesados.
+- No está orientado principalmente a lógica web I/O-bound.
+
+3. **Dónde se configura**
+
+- Ajustes de PHP INI (`opcache.jit`, tamaño de buffer, modo).
+
+4. **Expectativa práctica**
+
+- Los beneficios varían según workload; no se garantizan mejoras universales para apps web típicas.
+
+JIT es una función de optimización runtime que se evalúa mejor con benchmarking específico de tu carga.
+
+</details>
+
+<details>
+<summary>106. ¿Qué mejoras de rendimiento aporta JIT?</summary>
+
+#### Laravel
+
+JIT puede mejorar rendimiento sobre todo en rutas de código intensivas en cálculo; en cargas web típicas de Laravel, las ganancias suelen ser modestas.
+
+1. **Dónde es más probable ganar**
+
+- Bucles numéricos, procesamiento algorítmico, transformaciones CPU-bound.
+- Tareas de cálculo de larga ejecución en workers CLI.
+
+2. **Dónde las ganancias son limitadas**
+
+- Solicitudes I/O-bound (BD, Redis, llamadas HTTP, filesystem), que dominan muchas apps Laravel.
+
+3. **Perfil de impacto esperado**
+
+- Ganancias potenciales moderadas-altas en hotspots específicos muy CPU-heavy.
+- Impacto pequeño o despreciable en flujos CRUD/API comunes.
+
+4. **Buena práctica**
+
+- Haz benchmark con tráfico/workloads realistas de producción.
+- Mantén OPcache, optimización de consultas y caché como mejoras de mayor prioridad primero.
+
+JIT es situacional: potente para tareas compute-heavy, secundario para la mayoría de sistemas Laravel I/O-bound.
+
+</details>
+
+<details>
+<summary>107. ¿Cómo funcionan el bundling de assets y la integración de Vite en Laravel?</summary>
+
+#### Laravel
+
+Laravel integra Vite para bundling frontend moderno, HMR en dev server y builds de assets para producción.
+
+1. **Modo desarrollo**
+
+- El dev server de Vite sirve assets con hot module replacement.
+- Blade usa `@vite(...)` para cargar assets desde el dev server.
+
+2. **Build de producción**
+
+- `npm run build` (o equivalente) bundlea/minifica assets en archivos versionados.
+- Un manifest mapea entradas fuente a archivos compilados.
+
+3. **Puntos de integración con Laravel**
+
+- `vite.config.*` define entry points/plugins.
+- La directiva Blade `@vite(['resources/css/app.css', 'resources/js/app.js'])` inyecta las etiquetas correctas.
+
+4. **Beneficios**
+
+- DX rápida en desarrollo local.
+- Bundles de producción eficientes con fingerprints para cache-busting.
+
+Vite da a Laravel un pipeline frontend moderno y rápido desde desarrollo hasta despliegue.
+
+</details>
+
+<details>
+<summary>108. ¿Por qué Laravel cambió de Mix a Vite?</summary>
+
+#### Laravel
+
+Laravel cambió de Mix (basado en Webpack) a Vite para obtener feedback de desarrollo más rápido y tooling moderno más simple.
+
+1. **Razones principales**
+
+- Inicio del dev server significativamente más rápido.
+- Hot updates más rápidos vía pipeline ESM nativo.
+- Configuración más ligera para muchos stacks frontend modernos.
+
+2. **Mejoras en experiencia de desarrollador**
+
+- Mejor capacidad de respuesta en codebases frontend medianas/grandes.
+- Menor complejidad de configuración para casos de uso comunes.
+
+3. **Comportamiento en producción**
+
+- Salida de build eficiente con assets hasheados e integración con manifest.
+
+4. **Ajuste estratégico**
+
+- Alinea Laravel con estándares contemporáneos del ecosistema frontend.
+
+El cambio a Vite mejoró la productividad diaria y mantuvo moderno el tooling frontend de Laravel.
+
+</details>
+
+<details>
+<summary>109. ¿Cómo escalarías horizontalmente una aplicación Laravel?</summary>
+
+#### Laravel
+
+Escalado horizontal significa ejecutar múltiples instancias de la aplicación detrás de un balanceador y externalizar estado compartido.
+
+1. **Nodos de aplicación stateless**
+
+- Mantén servidores de app intercambiables.
+- Guarda sesiones/caché/colas en servicios compartidos (Redis/DB/SQS), no en memoria/archivos locales.
+
+2. **Balanceo de carga y autoscaling**
+
+- Distribuye tráfico entre múltiples instancias.
+- Escala hacia fuera según métricas de CPU, latencia, queue lag y throughput.
+
+3. **Estrategia de base de datos**
+
+- Ajusta la DB primaria, añade read replicas si hace falta.
+- Optimiza consultas/índices hot antes de sumar más nodos de app.
+
+4. **Escalado de colas y asíncrono**
+
+- Escala pools de workers independientemente de nodos web.
+- Separa colas de prioridad alta/baja.
+
+5. **Aspectos de infraestructura compartida**
+
+- Logs/métricas/trazas centralizados.
+- Object storage compartido para uploads.
+- Locks distribuidos para rutas críticas de concurrencia.
+
+6. **Disciplina de despliegue**
+
+- Deploys sin downtime.
+- Migraciones backward-compatible durante rolling updates.
+
+El escalado horizontal es efectivo cuando el estado de la app está externalizado y la observabilidad es fuerte.
+
+</details>
+
+<details>
+<summary>110. ¿Cómo optimizarías endpoints con alta carga de base de datos?</summary>
+
+#### Laravel
+
+La optimización de endpoints con alta carga de base de datos debe enfocarse en eficiencia de consultas, forma de datos y caché.
+
+1. **Eliminar ineficiencias de consulta**
+
+- Quita N+1 con eager loading.
+- Selecciona solo columnas requeridas.
+- Usa `exists`, agregados y `withCount` cuando sea posible.
+
+2. **Ajuste de índices y planes de ejecución**
+
+- Añade/ajusta índices para filtros/ordenamientos/joins frecuentes.
+- Inspecciona planes `EXPLAIN` y corrige full scans cuando sea evitable.
+
+3. **Reducir payload y round-trips**
+
+- Pagina datasets grandes.
+- Devuelve campos mínimos en API resources.
+- Evita over-fetching de árboles profundos de relaciones.
+
+4. **Estrategia de caché**
+
+- Cachea resultados estables y costosos.
+- Usa reglas de invalidación ligadas a escrituras.
+
+5. **Usar capa de acceso adecuada**
+
+- Eloquent para flujos de dominio mantenibles.
+- Query builder/SQL crudo para consultas analíticas/hot complejas.
+
+6. **Medir continuamente**
+
+- Rastrea cantidad de consultas, latencia p95/p99, CPU de DB, lock waits y efectos colaterales en colas.
+
+Optimiza primero los peores hotspots; el tuning guiado por métricas da el mayor ROI.
+
+</details>
+
+<details>
+<summary>111. ¿Cómo creas APIs REST en Laravel?</summary>
+
+#### Laravel
+
+Crear APIs REST en Laravel significa definir rutas orientadas a recursos, controladores, validación, auth y respuestas JSON consistentes.
+
+1. **Definir rutas API**
+
+- Usa `routes/api.php` y `Route::apiResource(...)` donde aplique.
+
+2. **Usar controladores API**
+
+- Mantén controladores ligeros y delega lógica de negocio a servicios/actions.
+
+3. **Validar entrada**
+
+- Usa Form Requests para validación y autorización de solicitudes.
+
+4. **Devolver JSON estandarizado**
+
+- Usa API Resources para dar forma a la respuesta.
+
+5. **Asegurar endpoints**
+
+- Usa Sanctum/Passport, middleware, policies y rate limiting.
+
+6. **Aspectos operativos**
+
+- Añade paginación, filtrado, ordenamiento y formatos de error consistentes.
+
+Una API REST lista para producción en Laravel se basa principalmente en consistencia, validación y contratos claros.
+
+</details>
+
+<details>
+<summary>112. ¿Cuál es la diferencia entre REST y GraphQL?</summary>
+
+#### Laravel
+
+REST y GraphQL son paradigmas API distintos para intercambio de datos cliente-servidor.
+
+1. **REST**
+
+- Múltiples endpoints mapeados a recursos (`/users`, `/orders/{id}`).
+- El servidor define forma de respuesta por endpoint.
+- Semántica HTTP y convenciones de caché sólidas.
+
+2. **GraphQL**
+
+- Normalmente un único endpoint con esquema tipado.
+- El cliente pide exactamente los campos que necesita.
+- Evita under-fetching/over-fetching cuando está bien diseñado.
+
+3. **Resumen de tradeoff**
+
+- REST: modelo operativo más simple, excelente para CRUD/APIs públicas estándar.
+- GraphQL: consultas y agregación flexibles, mayor complejidad de esquema/resolvers.
+
+4. **Cuándo elegir**
+
+- REST para APIs de recursos sencillas.
+- GraphQL cuando clientes necesitan composición de datos altamente dinámica.
+
+Ninguno es universalmente mejor; la elección depende de patrones de acceso a datos del cliente y experiencia del equipo.
+
+</details>
+
+<details>
+<summary>113. ¿Cómo implementarías GraphQL en Laravel?</summary>
+
+#### Laravel
+
+GraphQL en Laravel normalmente se implementa con un enfoque de esquema/resolvers basado en paquetes.
+
+1. **Instalar paquete GraphQL**
+
+- Usa un paquete GraphQL maduro para Laravel compatible con versión actual de Laravel/PHP.
+
+2. **Diseñar esquema**
+
+- Define tipos, queries, mutations e input objects.
+- Mantén esquema alineado con límites del dominio.
+
+3. **Implementar resolvers**
+
+- Mapea campos/operaciones a capa de servicios/actions.
+- Evita lógica de negocio directamente en código glue de resolver.
+
+4. **Añadir auth y policies**
+
+- Protege campos/mutations sensibles con guards y reglas de autorización.
+
+5. **Protecciones de rendimiento**
+
+- Usa eager loading/batching tipo DataLoader para evitar N+1.
+- Limita profundidad/complejidad de queries.
+
+6. **Prácticas operativas**
+
+- Versiona/depreca campos de esquema cuidadosamente.
+- Añade observabilidad para consultas lentas y fallos de resolver.
+
+El éxito de GraphQL en Laravel depende más de disciplina de esquema y resolvers que de configuración del transporte.
+
+</details>
+
+<details>
+<summary>114. ¿Qué es el versionado de API y por qué es importante?</summary>
+
+#### Laravel
+
+El versionado de API es la práctica de gestionar cambios incompatibles hacia atrás mediante límites explícitos de versión.
+
+1. **Por qué es importante**
+
+- Evita romper clientes existentes.
+- Permite migración gradual a nuevas versiones de contrato.
+- Soporta integraciones externas de larga vida.
+
+2. **Enfoques comunes de versionado**
+
+- Versionado por URI (`/api/v1/...`, `/api/v2/...`).
+- Versionado por header/media-type.
+
+3. **Estilo de implementación en Laravel**
+
+- Grupos de rutas/controladores/resources separados por versión.
+- Mantén lógica de negocio compartida en servicios/actions.
+
+4. **Buenas prácticas**
+
+- Minimiza cambios rompientes.
+- Marca deprecaciones claramente.
+- Proporciona timelines de migración y ventanas de compatibilidad.
+
+El versionado es una herramienta de gestión de contratos para evolución estable de APIs.
+
+</details>
+
+<details>
+<summary>115. ¿Cómo mejoran los API Resources las respuestas API?</summary>
+
+#### Laravel
+
+Los API Resources mejoran respuestas haciendo la salida explícita, consistente y desacoplada de la estructura interna del modelo.
+
+1. **Consistencia**
+
+- Nombres de campos y patrones de anidación estandarizados.
+
+2. **Seguridad/control de datos**
+
+- Evitan exposición accidental de atributos internos.
+
+3. **Capa de transformación**
+
+- Formatean valores y campos condicionales de forma predecible.
+
+4. **Mantenibilidad**
+
+- Lógica de salida centralizada en lugar de arrays ad hoc en controladores.
+
+5. **Soporte de versionado**
+
+- Evolución de contrato más simple introduciendo clases resource específicas por versión.
+
+Resources son la capa de representación limpia por defecto para APIs JSON en Laravel.
+
+</details>
+
+<details>
+<summary>116. ¿Qué son los DTOs y deberías usarlos en Laravel?</summary>
+
+#### Laravel
+
+Los DTOs (Data Transfer Objects) son objetos tipados para transportar datos validados entre capas.
+
+1. **Qué aportan los DTOs**
+
+- Contratos de datos explícitos.
+- Mejor type safety y soporte de IDE/análisis estático.
+- Firmas de métodos de servicios/actions más limpias.
+
+2. **Cuándo son útiles en Laravel**
+
+- Flujos de negocio no triviales.
+- Transformaciones de múltiples pasos.
+- Límites entre capas (controller -> service -> job).
+
+3. **Cuándo son opcionales**
+
+- Endpoints CRUD muy simples pueden funcionar bien con arrays validados.
+
+4. **Guía pragmática**
+
+- Usa DTOs cuando reduzcan ambigüedad y duplicación.
+- Evita sobreingeniería con DTOs en módulos pequeños.
+
+Los DTOs aportan valor en codebases medianas/grandes con flujos de dominio complejos.
+
+</details>
+
+<details>
+<summary>117. ¿Cómo validarías solicitudes API en Laravel?</summary>
+
+#### Laravel
+
+La validación de solicitudes API en Laravel normalmente se realiza con Form Requests y reglas de validación claras.
+
+1. **Usar clases Form Request**
+
+- Encapsula `authorize()` y `rules()` por endpoint/caso de uso.
+
+2. **Aplicar reglas estrictas**
+
+- Valida tipos, formatos, campos requeridos, unicidad y arrays anidados.
+
+3. **Sanitizar/normalizar cuando sea necesario**
+
+- Prepara input antes de validar para manejo consistente aguas abajo.
+
+4. **Devolver errores consistentes**
+
+- Mantén forma de respuesta de errores de validación estandarizada para clientes.
+
+5. **No confiar en input del cliente**
+
+- Valida cada endpoint de escritura incluso en APIs internas.
+
+La validación es un límite API core que protege integridad de datos y calidad de contrato.
+
+</details>
+
+<details>
+<summary>118. ¿Qué son Form Requests?</summary>
+
+#### Laravel
+
+Form Requests son clases de request personalizadas dedicadas a lógica de validación y autorización.
+
+1. **Qué contienen**
+
+- `authorize()` para comprobaciones de acceso.
+- `rules()` para restricciones de validación.
+
+2. **Cómo se usan**
+
+- Type-hint en acción de controlador; Laravel valida automáticamente antes de la lógica de acción.
+
+```php
+public function store(StoreOrderRequest $request): JsonResponse
+{
+    $data = $request->validated();
+    // ...
+}
+```
+
+3. **Beneficios**
+
+- Controladores más limpios.
+- Lógica de validación reutilizable/organizada.
+- Reglas de request testeables.
+
+Form Requests son el enfoque idiomático de Laravel para validación en el límite de la solicitud.
+
+</details>
+
+<details>
+<summary>119. ¿Cómo manejas excepciones en APIs?</summary>
+
+#### Laravel
+
+El manejo de excepciones en APIs debe convertir errores internos en respuestas consistentes, seguras y legibles por máquina.
+
+1. **Centralizar manejo**
+
+- Usa lógica global de exception handler/render para mapear excepciones a respuestas HTTP.
+
+2. **Mapear tipos de excepción conocidos**
+
+- Validación -> `422`
+- Autenticación -> `401`
+- Autorización -> `403`
+- No encontrado -> `404`
+- Conflictos de dominio/negocio -> `409`/`422` según corresponda
+
+3. **Ocultar internals**
+
+- No expongas stack traces/detalles sensibles en producción.
+
+4. **Añadir observabilidad**
+
+- Registra excepciones con contexto de correlación/request.
+- Alerta sobre fallos de alta severidad o repetidos.
+
+5. **Mantener contrato estable**
+
+- Estandariza formato de payload de error en todos los endpoints.
+
+Un buen manejo de excepciones API equilibra claridad para cliente y seguridad operativa.
+
+</details>
+
+<details>
+<summary>120. ¿Cómo estandarizas respuestas de error en APIs?</summary>
+
+#### Laravel
+
+Los errores API estandarizados usan un único esquema JSON consistente para todos los tipos de fallo.
+
+1. **Definir un contrato de error**
+
+- Campos como `code`, `message`, `errors`, `meta`, `request_id`.
+
+2. **Centralizar generación**
+
+- Construye respuestas en exception handler o capa dedicada de respuestas de error.
+
+3. **Usar estados HTTP correctos**
+
+- Alinea status codes con categoría de error.
+
+4. **Manejar validación de forma consistente**
+
+- Preserva detalles a nivel de campo en estructura predecible.
+
+5. **Beneficios**
+
+- Integración de clientes más simple.
+- Mejor depuración y monitoreo.
+- Contrato estable entre equipos/servicios.
+
+La estandarización reduce fricción para consumidores API y baja overhead de soporte.
+
+</details>
+
+<details>
+<summary>121. ¿Qué son rate limits en APIs?</summary>
+
+#### Laravel
+
+Los rate limits de API limitan cuántas solicitudes puede hacer un cliente en una ventana dada.
+
+1. **Propósito**
+
+- Prevenir abuso e intentos brute-force.
+- Proteger capacidad del sistema y equidad.
+
+2. **Dimensiones típicas**
+
+- Por IP, por usuario, por token, por grupo de endpoint.
+
+3. **Comportamiento de cara al cliente**
+
+- Tráfico excesivo recibe `429 Too Many Requests`.
+- Headers opcionales comunican límites/ventanas de reset.
+
+4. **Consideraciones de diseño**
+
+- Límites diferentes para clientes públicos vs autenticados.
+- Límites más estrictos para endpoints sensibles (auth/password reset).
+
+Los rate limits son un control core de confiabilidad y seguridad API.
+
+</details>
+
+<details>
+<summary>122. ¿Cómo aseguras APIs en Laravel?</summary>
+
+#### Laravel
+
+Asegurar APIs Laravel requiere controles por capas en identidad, autorización, transporte, validación y operación.
+
+1. **Autenticación**
+
+- Usa Sanctum/Passport según requisitos.
+- Rota/revoca tokens y aplica mínimo privilegio.
+
+2. **Autorización**
+
+- Aplica policies/gates por acción de recurso.
+
+3. **Seguridad de entrada y salida**
+
+- Valida toda entrada, evita concatenación SQL cruda, sanitiza rutas de contenido riesgosas.
+
+4. **Transporte y headers**
+
+- Fuerza HTTPS, configura CORS de forma estricta, añade headers de seguridad.
+
+5. **Protección contra abuso**
+
+- Aplica rate limit a endpoints y monitorea anomalías.
+
+6. **Hardening operativo**
+
+- Mantén dependencias parchadas, centraliza logs, protege secretos y realiza revisiones de seguridad regulares.
+
+La seguridad API es defensa en profundidad, no un único toggle de middleware.
+
+</details>
+
+<details>
+<summary>123. ¿Qué es CORS y cómo se configura en Laravel?</summary>
+
+#### Laravel
+
+CORS (Cross-Origin Resource Sharing) controla qué orígenes pueden acceder a tu API desde navegadores.
+
+1. **Por qué se necesita**
+
+- Los navegadores aplican same-origin policy por defecto.
+- CORS permite explícitamente solicitudes cross-origin aprobadas.
+
+2. **Configuración en Laravel**
+
+- Configura orígenes, métodos, headers y credenciales permitidos en ajustes CORS.
+- Aplica configuración a rutas API que necesiten acceso cross-origin.
+
+3. **Guía de seguridad**
+
+- Evita `*` demasiado amplio en producción para APIs sensibles.
+- Restringe orígenes a dominios frontend conocidos.
+- Usa credenciales solo cuando sea necesario y con configuración segura.
+
+4. **Nota operativa**
+
+- CORS mal configurado es una fuente común de fallos de integración frontend.
+
+CORS es una capa de política de acceso del navegador, no un mecanismo de autenticación.
+
+</details>
+
+<details>
+<summary>124. ¿Qué son signed API requests?</summary>
+
+#### Laravel
+
+Las signed API requests incluyen una firma criptográfica que prueba integridad de la solicitud y autenticidad de origen.
+
+1. **Qué protege la firma**
+
+- Previene manipulación de parámetros.
+- Puede incluir timestamp/nonce para limitar riesgo de replay.
+
+2. **Concepto típico de implementación**
+
+- El cliente calcula firma sobre datos canónicos de solicitud usando secreto compartido/clave privada.
+- El servidor recalcula y compara firma.
+
+3. **Cuándo es útil**
+
+- Verificación de webhooks.
+- Integraciones servidor-a-servidor.
+- Acciones críticas donde integridad de la solicitud debe ser demostrable.
+
+4. **Relación con auth**
+
+- Suele complementar autenticación por token en lugar de reemplazarla.
+
+Las signed requests añaden garantías fuertes de integridad para interacciones API sensibles.
+
+</details>
+
+<details>
+<summary>125. ¿Cómo implementas WebSockets en Laravel?</summary>
+
+#### Laravel
+
+WebSockets en Laravel normalmente se implementan con Broadcasting + Reverb (o infraestructura websocket compatible) + cliente Echo.
+
+1. **Configuración backend**
+
+- Configura driver de broadcasting y servidor websocket.
+- Define eventos broadcastables y autorización de canales.
+
+2. **Configuración frontend**
+
+- Inicializa Laravel Echo con conector websocket.
+- Suscríbete a canales y escucha eventos.
+
+3. **Seguridad de canales**
+
+- Usa canales private/presence para streams autenticados.
+
+4. **Aspectos operativos**
+
+- Escala instancias de servidor websocket.
+- Monitorea conteo de conexiones, tasas de mensajes y comportamiento de reconexión.
+
+5. **Casos de uso**
+
+- Notificaciones en tiempo real, chat, colaboración, dashboards en vivo.
+
+En Laravel moderno, Reverb + Echo es la vía first-party estándar para funcionalidades WebSocket.
+
+</details>
+
+<details>
+<summary>126. ¿Qué herramientas de testing proporciona Laravel?</summary>
+
+#### Laravel
+
+Laravel proporciona un stack completo de testing para pruebas unitarias, feature e integración.
+
+1. **Soporte core del framework**
+
+- Construido sobre PHPUnit.
+- Integración sólida con Pest (sintaxis alternativa popular).
+
+2. **Utilidades de testing HTTP**
+
+- Simulación de requests (`get`, `post`, `put`, etc.).
+- Assertions JSON y verificaciones de estructura de respuesta.
+
+3. **Helpers para testing de base de datos**
+
+- Traits para refresh/transacciones de base de datos.
+- Model factories y helpers de seed.
+
+4. **Fakes y helpers de mocking**
+
+- `Queue::fake()`, `Event::fake()`, `Notification::fake()`, `Mail::fake()`.
+- Mocking de facades y utilidades de mocking de dependencias.
+
+5. **Capacidades adicionales**
+
+- Testing de comandos de consola.
+- Helpers de viaje en el tiempo.
+- Soporte de testing en paralelo.
+
+Las herramientas de testing de Laravel hacen práctico validar comportamiento desde lógica de dominio hasta flujos HTTP completos.
+
+</details>
+
+<details>
+<summary>127. ¿Cuál es la diferencia entre feature tests y unit tests?</summary>
+
+#### Laravel
+
+Feature tests y unit tests difieren en alcance y profundidad de integración.
+
+1. **Unit tests**
+
+- Prueban una unidad pequeña aislada (una clase/método).
+- Bootstrap mínimo del framework.
+- Dependencias normalmente mockeadas/fakeadas.
+
+2. **Feature tests**
+
+- Prueban comportamiento end-to-end de la aplicación a través de límites del framework.
+- A menudo incluyen routing, middleware, validación, DB, auth y assertions de respuesta.
+
+3. **Cuándo usar**
+
+- Unit tests: lógica pura/de dominio compleja.
+- Feature tests: flujos críticos de usuario/API y confianza de integración.
+
+4. **Estrategia equilibrada**
+
+- Usa ambos: unit tests para verificaciones rápidas de lógica, feature tests para verificar comportamiento real.
+
+Feature tests responden “¿funciona el comportamiento del sistema?”, unit tests responden “¿funciona la lógica de este componente?”.
+
+</details>
+
+<details>
+<summary>128. ¿Qué es el trait RefreshDatabase?</summary>
+
+#### Laravel
+
+`RefreshDatabase` es un trait de testing que resetea el estado de base de datos entre pruebas para asegurar aislamiento.
+
+1. **Qué hace**
+
+- Ejecuta migraciones y proporciona estado limpio de DB según estrategia de ejecución de pruebas.
+- Previene fuga de datos entre tests.
+
+2. **Por qué importa**
+
+- Tests deterministas.
+- Menor flakiness por registros residuales.
+
+3. **Uso típico**
+
+```php
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+class UserApiTest extends TestCase
+{
+    use RefreshDatabase;
+}
+```
+
+4. **Nota práctica**
+
+- La configuración de test DB y velocidad de migraciones influyen mucho en tiempo total de test suite.
+
+`RefreshDatabase` es la base estándar para tests confiables con soporte de base de datos.
+
+</details>
+
+<details>
+<summary>129. ¿Cómo mejoran las factories el testing?</summary>
+
+#### Laravel
+
+Las factories mejoran tests generando datos de modelo realistas y configurables de forma rápida y consistente.
+
+1. **Beneficios**
+
+- Menos boilerplate manual de fixtures.
+- Intención de test más clara mediante states nombrados.
+- Creación fácil de grafos de relaciones.
+
+2. **Ejemplo**
+
+```php
+$user = User::factory()->admin()->create();
+$order = Order::factory()->for($user)->create();
+```
+
+3. **Por qué esto mejora calidad**
+
+- Los tests se enfocan en comportamiento, no en ruido de setup.
+- Escenarios de datos reutilizables y componibles.
+
+4. **Ángulo de rendimiento**
+
+- Autoría de tests más rápida y mantenimiento más fácil con el tiempo.
+
+Las factories son una de las herramientas de mayor impacto en flujos de testing en Laravel.
+
+</details>
+
+<details>
+<summary>130. ¿Cómo pruebas APIs en Laravel?</summary>
+
+#### Laravel
+
+El testing de API en Laravel usa helpers de pruebas HTTP para simular solicitudes y validar status, payload, auth y efectos secundarios.
+
+1. **Hacer solicitudes en tests**
+
+- Usa métodos como `getJson`, `postJson`, `putJson`, `deleteJson`.
+
+2. **Validar respuestas**
+
+- Status codes, estructura/fragmentos JSON, errores de validación, metadatos de paginación.
+
+3. **Probar auth/permisos**
+
+- Usa usuarios/tokens de prueba autenticados.
+- Verifica rutas forbidden/unauthorized.
+
+4. **Probar efectos en DB**
+
+- Verifica registros creados/actualizados/eliminados.
+
+5. **Ejemplo**
+
+```php
+$response = $this->actingAs($user)->postJson('/api/orders', $payload);
+$response->assertCreated()->assertJsonStructure(['data' => ['id']]);
+```
+
+Las pruebas API completas deben cubrir tanto happy path como escenarios de error/autorización.
+
+</details>
+
+<details>
+<summary>131. ¿Cómo fakear colas, eventos, notificaciones y mail en tests?</summary>
+
+#### Laravel
+
+Laravel ofrece fakes dedicados para interceptar efectos secundarios y verificar intención sin ejecutar comportamiento externo.
+
+1. **Queue fake**
+
+```php
+Queue::fake();
+Queue::assertPushed(SendInvoiceJob::class);
+```
+
+2. **Event fake**
+
+```php
+Event::fake();
+Event::assertDispatched(OrderPaid::class);
+```
+
+3. **Notification fake**
+
+```php
+Notification::fake();
+Notification::assertSentTo($user, InvoicePaidNotification::class);
+```
+
+4. **Mail fake**
+
+```php
+Mail::fake();
+Mail::assertSent(InvoicePaidMail::class);
+```
+
+5. **Por qué importa**
+
+- Tests rápidos y deterministas.
+- Verifica orquestación sin ejecutar efectos secundarios async/de red costosos.
+
+Los fakes son esenciales para aislar comportamiento manteniendo pruebas confiables.
+
+</details>
+
+<details>
+<summary>132. ¿Qué es Pest PHP y por qué es popular con Laravel?</summary>
+
+#### Laravel
+
+Pest es un framework de testing construido sobre PHPUnit con sintaxis más limpia y expresiva, además de integración sólida con Laravel.
+
+1. **Qué ofrece**
+
+- Sintaxis de tests concisa.
+- API rica de expectations.
+- Ecosistema de plugins y buenos defaults para Laravel.
+
+2. **Por qué gusta a equipos Laravel**
+
+- Escritura de tests más rápida.
+- Tests legibles con menos boilerplate.
+- Compatible con tooling PHPUnit existente.
+
+3. **Importante aclaración**
+
+- Pest no reemplaza el motor PHPUnit; lo envuelve con una experiencia de desarrollador más fluida.
+
+4. **Cuándo elegirlo**
+
+- Cuando el equipo valora legibilidad y velocidad de autoría manteniendo compatibilidad con stack de testing de Laravel.
+
+Pest es popular porque mejora DX de pruebas sin sacrificar integración con el ecosistema Laravel/PHPUnit.
+
+</details>
+
+<details>
+<summary>133. ¿Qué es mocking en tests de Laravel?</summary>
+
+#### Laravel
+
+Mocking reemplaza dependencias reales por test doubles controlables para aislar la unidad bajo prueba.
+
+1. **Por qué hacer mock**
+
+- Evitar llamadas reales a DB/red/servicios externos.
+- Simular rutas de error y casos límite.
+- Verificar interacciones con colaboradores.
+
+2. **Cómo en Laravel**
+
+- Mockear interfaces/servicios resueltos desde el contenedor.
+- Usar fakes del framework cuando corresponda.
+
+3. **Buena práctica**
+
+- Mockea límites, no lógica pura core.
+- Mantén expectativas enfocadas en comportamiento observable.
+
+4. **Balance**
+
+- Combina unit tests mockeados con integration/feature tests para confianza completa.
+
+Mocking es una herramienta de precisión para aislamiento y verificación de contratos de colaboración.
+
+</details>
+
+<details>
+<summary>134. ¿Cómo mockear Facades?</summary>
+
+#### Laravel
+
+Las Facades pueden mockearse directamente con helpers integrados de mocking.
+
+1. **Enfoque básico**
+
+```php
+Cache::shouldReceive('put')
+    ->once()
+    ->with('key', 'value', 60);
+```
+
+2. **Uso típico**
+
+- Verificar que un método de facade fue llamado con argumentos esperados.
+- Devolver valores controlados desde llamadas de facade.
+
+3. **Cuándo preferir DI en su lugar**
+
+- En servicios de negocio core, inyección de dependencias con mocks de interfaces suele ser más limpia.
+- Mocking de facades es conveniente para código glue de framework.
+
+4. **Guía**
+
+- Usa facade mocks con intención; evita sobreacoplar tests a detalles de implementación.
+
+Mockear facades es útil, pero DI a nivel de arquitectura sigue siendo el default más mantenible para lógica core.
+
+</details>
+
+<details>
+<summary>135. ¿Cómo pruebas jobs en cola?</summary>
+
+#### Laravel
+
+Probar jobs en cola normalmente cubre por separado la intención de dispatch y el comportamiento del job.
+
+1. **Testing de dispatch (orquestación)**
+
+- Fakea la cola y verifica que el job fue enviado.
+
+```php
+Queue::fake();
+// trigger action
+Queue::assertPushed(ProcessOrderJob::class);
+```
+
+2. **Testing de lógica del job**
+
+- Instancia el job y llama `handle()` con dependencias/servicios mockeados.
+
+3. **Comportamiento de fallo/reintento**
+
+- Prueba idempotencia y rutas de fallo.
+- Valida supuestos de retry/backoff para jobs críticos.
+
+4. **Por qué separar pruebas**
+
+- Diagnóstico más claro: cableado de dispatch vs comportamiento de negocio.
+
+Un buen testing de jobs en cola asegura tanto intención de programación como corrección de ejecución.
+
+</details>
+
+<details>
+<summary>136. ¿Cómo pruebas events y listeners?</summary>
+
+#### Laravel
+
+Las pruebas de event/listener deben verificar dispatch y reacciones del listener con separación clara.
+
+1. **Tests de dispatch de evento**
+
+- Usa `Event::fake()` y valida dispatch del evento desde el caso de uso.
+
+2. **Tests de comportamiento del listener**
+
+- Prueba la clase listener directamente (o vía flujo de integración).
+- Verifica efectos secundarios (emails, updates de DB, dispatch de jobs).
+
+3. **Queued listeners**
+
+- Verifica que listener/job fue encolado cuando corresponde.
+
+4. **Buena práctica**
+
+- Mantén nombres de eventos con significado de dominio.
+- Asegura que listeners sean idempotentes y seguros para reintentos.
+
+Probar ambos caminos, dispatch y reacción, da confianza en flujos orientados a eventos.
+
+</details>
+
+<details>
+<summary>137. ¿Qué es parallel testing?</summary>
+
+#### Laravel
+
+Parallel testing ejecuta test suites en múltiples procesos simultáneamente para reducir el tiempo total de ejecución.
+
+1. **Cómo funciona**
+
+- Divide archivos de test en procesos worker.
+- Cada proceso ejecuta en paralelo un subconjunto de pruebas.
+
+2. **Beneficios**
+
+- Loops de feedback de CI más rápidos.
+- Mejor productividad de desarrollador en suites grandes.
+
+3. **Requisitos**
+
+- Aislamiento de pruebas adecuado.
+- DBs/recursos separados por proceso cuando sea necesario.
+
+4. **Riesgos comunes**
+
+- Estado mutable compartido o recursos no aislados que generan tests flaky.
+
+Parallel testing es una de las formas más efectivas de acelerar suites grandes de Laravel.
+
+</details>
+
+<details>
+<summary>138. ¿Cómo mejoras el rendimiento de tests?</summary>
+
+#### Laravel
+
+Mejorar rendimiento de tests requiere reducir costo de integración innecesario manteniendo confianza.
+
+1. **Mezcla correcta de pruebas**
+
+- Mantén muchas unit tests rápidas.
+- Limita feature tests pesadas a flujos críticos.
+
+2. **Usar parallel testing**
+
+- Ejecuta tests en múltiples procesos en CI/local.
+
+3. **Optimizar uso de base de datos**
+
+- Usa configuración de test DB liviana.
+- Evita seeding excesivo por test salvo necesidad.
+
+4. **Fakear límites costosos**
+
+- Fakea mail/queue/events/notifications cuando efectos secundarios no sean foco del test.
+
+5. **Minimizar overhead de setup**
+
+- Reutiliza states/fixtures de factory eficientemente.
+- Evita complejidad innecesaria de boot del contenedor.
+
+6. **Perfilar tests lentos**
+
+- Rastrea archivos/casos de test más lentos y refactoriza hotspots.
+
+La velocidad de pruebas mejora más cuando arquitectura y diseño de tests priorizan aislamiento y foco.
+
+</details>
+
+<details>
+<summary>139. ¿Cuáles son los beneficios de usar Vue.js con Laravel?</summary>
+
+#### Laravel
+
+Vue.js combina bien con Laravel porque ambos ecosistemas priorizan productividad de desarrollador rápida y patrones claros de integración.
+
+1. **Integración fluida**
+
+- Soporte nativo vía Vite y scaffolding frontend directo.
+- Encaje simple con arquitectura API + componentes.
+
+2. **Productividad de desarrollador**
+
+- UI reactiva con modelo de componentes conciso.
+- Buen equilibrio entre simplicidad y capacidad para productos centrados en CRUD.
+
+3. **Alineación de ecosistema**
+
+- Patrones de comunidad sólidos para stacks Laravel + Vue.
+- Funciona bien con Inertia o enfoques SPA orientados a API.
+
+4. **Valor práctico**
+
+- Entrega más rápida de interfaces dinámicas manteniendo Laravel como backend robusto.
+
+Vue con Laravel es una elección full-stack pragmática para muchos equipos de producto.
+
+</details>
+
+<details>
+<summary>140. ¿Qué es Inertia.js y cómo funciona?</summary>
+
+#### Laravel
+
+Inertia.js te permite construir experiencias modernas tipo SPA sin crear un backend API separado.
+
+1. **Idea central**
+
+- Rutas/controladores de Laravel devuelven respuestas Inertia.
+- Las páginas frontend son componentes Vue/React/Svelte.
+- Inertia gestiona navegación del lado cliente y actualización de props de página.
+
+2. **Cómo funciona el flujo**
+
+- La request llega al controlador Laravel.
+- El controlador devuelve nombre de componente + props.
+- Inertia cambia el componente de página en el navegador sin recarga completa.
+
+3. **Beneficios**
+
+- UX tipo SPA con routing/control del lado servidor.
+- No necesitas endpoints REST duplicados para páginas internas de la app.
+- Patrones compartidos de auth/validación/sesión de Laravel.
+
+Inertia es ideal cuando quieres interactividad SPA con simplicidad backend estilo monolito.
+
+</details>
+
+<details>
+<summary>141. ¿Qué es Livewire y cuándo lo usarías?</summary>
+
+#### Laravel
+
+Livewire es un framework Laravel-first para construir interfaces dinámicas usando componentes dirigidos por servidor y mínimo JavaScript personalizado.
+
+1. **Cómo funciona**
+
+- Los componentes UI son clases PHP + vistas Blade.
+- Interacciones del navegador disparan requests AJAX.
+- El servidor actualiza estado del componente y devuelve diffs del DOM.
+
+2. **Cuándo usarlo**
+
+- Paneles de administración y herramientas internas.
+- Flujos centrados en formularios.
+- Equipos que prefieren desarrollo full-stack PHP-first.
+
+3. **Beneficios**
+
+- Desarrollo rápido con baja complejidad frontend.
+- Integración estrecha con auth/validación/policies de Laravel.
+
+4. **Tradeoff**
+
+- Para apps altamente interactivas y client-heavy, frameworks SPA pueden ofrecer mejor control frontend.
+
+Livewire es excelente para entregar UIs dinámicas en Laravel sin arquitectura frontend pesada.
+
+</details>
+
+<details>
+<summary>142. Compara Livewire, Inertia y enfoques SPA tradicionales.</summary>
+
+#### Laravel
+
+Estos enfoques difieren principalmente en dónde vive el estado UI y la lógica de renderizado.
+
+1. **Livewire**
+
+- Componentes dirigidos por servidor (PHP + Blade).
+- Requiere JS mínimo.
+- Excelente para equipos Laravel-céntricos y UIs de formularios/admin.
+
+2. **Inertia**
+
+- Páginas renderizadas en cliente (Vue/React/Svelte) con controladores Laravel como proveedores de páginas backend.
+- Navegación tipo SPA sin capa API pública separada para páginas.
+
+3. **SPA tradicional (API + app frontend)**
+
+- App frontend totalmente separada consumiendo APIs REST/GraphQL.
+- Máxima autonomía frontend y desacoplamiento.
+- Mayor complejidad (auth, contratos API, separación de despliegue).
+
+4. **Regla de decisión**
+
+- UI de producto PHP-first rápida: Livewire.
+- UX SPA moderna con simplicidad de monolito: Inertia.
+- Arquitectura API-first pública/cross-platform: SPA tradicional.
+
+Elige según distribución de skills del equipo, demandas UX del producto y límites arquitectónicos.
+
+</details>
+
+<details>
+<summary>143. ¿Qué es el stack TALL?</summary>
+
+#### Laravel
+
+El stack TALL significa **Tailwind CSS, Alpine.js, Laravel, Livewire**.
+
+1. **Componentes**
+
+- **Laravel**: framework backend.
+- **Livewire**: componentes reactivos dirigidos por servidor.
+- **Alpine.js**: interactividad frontend ligera.
+- **Tailwind CSS**: estilo utility-first.
+
+2. **Por qué los equipos usan TALL**
+
+- Desarrollo full-stack rápido con tooling JS pesado mínimo.
+- Gran ajuste para apps CRUD/admin/de negocio.
+- Experiencia de desarrollador cohesiva y Laravel-first.
+
+3. **Fortalezas típicas**
+
+- Iteración rápida.
+- Arquitectura clara centrada en backend.
+- Menor complejidad frontend para muchos casos de uso.
+
+TALL es un stack productivo para equipos que priorizan velocidad de desarrollo centrada en Laravel.
+
+</details>
+
+<details>
+<summary>144. ¿Qué es SSR (Server-Side Rendering) y Laravel lo soporta?</summary>
+
+#### Laravel
+
+SSR (Server-Side Rendering) significa que el HTML se renderiza en el servidor antes de enviarse al navegador.
+
+1. **Por qué se usa SSR**
+
+- First content paint más rápido para muchas páginas.
+- Mejor SEO para contenido que debe indexarse.
+- Mejor rendimiento en dispositivos/redes lentos.
+
+2. **Soporte en Laravel**
+
+- El renderizado nativo con Blade es del lado servidor por defecto.
+- SSR también puede usarse en stacks frontend integrados con Laravel (por ejemplo, frameworks JS con capacidad SSR y backend Laravel).
+
+3. **Cuándo elegir SSR**
+
+- Páginas públicas críticas para SEO.
+- Experiencias de primera carga sensibles al rendimiento.
+
+Laravel soporta completamente patrones SSR, tanto vía Blade como arquitecturas frontend híbridas.
+
+</details>
+
+<details>
+<summary>145. ¿Cómo se integra Laravel con React y Vue?</summary>
+
+#### Laravel
+
+Laravel se integra con React/Vue mediante Vite, patrones de routing y múltiples opciones arquitectónicas.
+
+1. **Tooling frontend**
+
+- Vite compila y sirve assets de React/Vue.
+- Blade usa `@vite(...)` para cargar entradas compiladas.
+
+2. **Estilos de integración**
+
+- Blade + componentes React/Vue embebidos.
+- Inertia.js con páginas React/Vue.
+- SPA desacoplada consumiendo API de Laravel.
+
+3. **Puntos de integración backend**
+
+- Flujos de auth/sesión/token.
+- Manejo de validación/errores.
+- Contratos basados en API Resources/DTO.
+
+4. **Ventaja práctica**
+
+- Los equipos pueden elegir nivel de acoplamiento: integración tipo monolito o frontend totalmente desacoplado.
+
+Laravel ofrece rutas de integración flexibles para ecosistemas React y Vue.
+
+</details>
+
+<details>
+<summary>146. ¿Qué es Ziggy en Laravel?</summary>
+
+#### Laravel
+
+Ziggy es un paquete que expone rutas nombradas de Laravel a JavaScript, permitiendo generar rutas en frontend usando definiciones de rutas del backend.
+
+1. **Qué resuelve**
+
+- Evita URLs hardcodeadas en frontend.
+- Mantiene enlaces frontend alineados con nombres/parámetros de rutas Laravel.
+
+2. **Cómo funciona**
+
+- Comparte metadatos de rutas con frontend.
+- Proporciona helper `route()` en JavaScript.
+
+3. **Concepto de ejemplo**
+
+```js
+route('posts.show', { post: 42 });
+```
+
+4. **Beneficios**
+
+- Mejor mantenibilidad durante refactors de rutas.
+- Menos bugs por desajuste de URL entre backend y frontend.
+
+Ziggy es especialmente útil en apps Laravel + Inertia/SPA híbridas.
+
+</details>
+
+<details>
+<summary>147. ¿Qué es Laravel Sail?</summary>
+
+#### Laravel
+
+Laravel Sail es un entorno local de desarrollo oficial, ligero y basado en Docker para Laravel.
+
+1. **Qué ofrece**
+
+- Configuración Docker predefinida para PHP, base de datos, Redis y servicios relacionados.
+- Entorno local consistente entre máquinas del equipo.
+
+2. **Por qué los equipos lo usan**
+
+- Onboarding más rápido.
+- Menos problemas de “works on my machine”.
+- Sin necesidad de instalar manualmente todo el stack local.
+
+3. **Uso típico**
+
+- Ejecutar app/servicios/comandos mediante scripts wrapper de Sail.
+
+Sail es un default pragmático para desarrollo local Laravel containerizado.
+
+</details>
+
+<details>
+<summary>148. ¿Qué es Laravel Forge?</summary>
+
+#### Laravel
+
+Laravel Forge es un servicio de aprovisionamiento de servidores y despliegue para aplicaciones PHP/Laravel.
+
+1. **Propósito core**
+
+- Automatiza setup de servidor (web server, PHP, básicos de base de datos, SSL, hooks de deploy).
+- Simplifica flujo de despliegue en proveedores cloud VPS.
+
+2. **Qué gestiona**
+
+- Configuración de sitios, scripts de despliegue, setup de procesos de colas/scheduler y certificados.
+
+3. **Por qué importa**
+
+- Reduce overhead DevOps para equipos Laravel.
+- Estandariza patrones de despliegue y gestión de servidores.
+
+Forge ayuda a operar apps Laravel en producción sin construir toda la automatización de infraestructura desde cero.
+
+</details>
+
+<details>
+<summary>149. ¿Qué es Laravel Vapor?</summary>
+
+#### Laravel
+
+Laravel Vapor es la plataforma serverless de despliegue de Laravel construida sobre servicios gestionados de AWS.
+
+1. **Qué ofrece**
+
+- Runtime serverless para workloads Laravel.
+- Patrones de infraestructura gestionada (cómputo, storage, integraciones de escalado).
+
+2. **Por qué los equipos lo eligen**
+
+- Autoscaling con menor carga de gestión de servidores.
+- Modelo pay-for-usage alineado con patrones de tráfico variables.
+
+3. **Escenarios de mejor encaje**
+
+- Equipos que quieren serverless AWS con DX enfocada en Laravel.
+- Aplicaciones que se benefician de escalado elástico.
+
+Vapor es la vía Laravel-first hacia arquitectura serverless en producción sobre AWS.
+
+</details>
+
+<details>
+<summary>150. ¿Qué es Laravel Envoyer?</summary>
+
+#### Laravel
+
+Laravel Envoyer es una herramienta de despliegue zero-downtime para aplicaciones PHP/Laravel.
+
+1. **Capacidad core**
+
+- Despliega nuevos releases sin sacar la app de línea.
+
+2. **Cómo funciona en general**
+
+- Usa flujo de despliegue basado en releases.
+- Cambia symlink de release activo tras pasos exitosos.
+
+3. **Por qué es útil**
+
+- Minimiza downtime visible para usuarios.
+- Soporta rollbacks de despliegue más seguros.
+
+Envoyer se centra específicamente en orquestación confiable de despliegues zero-downtime.
+
+</details>
+
+<details>
+<summary>151. ¿Qué es Laravel Pennant?</summary>
+
+#### Laravel
+
+Laravel Pennant es el sistema de feature flags de Laravel para controlar comportamiento de despliegue de funcionalidades.
+
+1. **Qué habilita**
+
+- Activar/desactivar features por usuario, grupo o regla.
+- Rollouts graduales y patrones de experimentación.
+
+2. **Casos de uso**
+
+- Canary releases.
+- Exposición de features estilo A/B.
+- Migración progresiva segura de cambios mayores.
+
+3. **Beneficios**
+
+- Menor riesgo de release.
+- Rollback más rápido de features problemáticas sin rollback completo de deploy.
+
+Pennant ofrece feature flagging first-party para entrega de producto controlada.
+
+</details>
+
+<details>
+<summary>152. ¿Qué es Laravel Pulse?</summary>
+
+#### Laravel
+
+Laravel Pulse es un paquete first-party de insights en tiempo real y monitoreo de rendimiento de aplicaciones.
+
+1. **Qué muestra**
+
+- Métricas de salud de aplicación de alto nivel y tendencias operativas.
+- Visibilidad sobre señales de throughput/rendimiento.
+
+2. **Por qué es útil**
+
+- Diagnóstico rápido durante incidentes.
+- Mejor conocimiento del comportamiento runtime en producción.
+
+3. **Posicionamiento**
+
+- Complementa logs y stacks más profundos de trazas/métricas.
+
+Pulse ayuda a equipos Laravel a observar salud de aplicación con tooling nativo del framework.
+
+</details>
+
+<details>
+<summary>153. ¿Qué es Laravel Telescope?</summary>
+
+#### Laravel
+
+Laravel Telescope es una herramienta de debugging e introspección para entornos local/staging.
+
+1. **Qué registra**
+
+- Requests, excepciones, consultas, jobs, mails, notificaciones, eventos de caché y más.
+
+2. **Por qué los developers la usan**
+
+- Debugging más rápido del comportamiento de la aplicación.
+- Visibilidad sencilla de internals del framework durante desarrollo.
+
+3. **Guía operativa**
+
+- Normalmente se restringe o desactiva en producción por sensibilidad y consideraciones de overhead.
+
+Telescope es una de las herramientas de observabilidad nativas de Laravel más útiles para flujos de desarrollo.
+
+</details>
+
+<details>
+<summary>154. ¿Qué es Laravel Scout?</summary>
+
+#### Laravel
+
+Laravel Scout es la abstracción de búsqueda full-text basada en drivers de Laravel para modelos Eloquent.
+
+1. **Qué hace**
+
+- Sincroniza datos de modelos con motores de búsqueda externos.
+- Proporciona APIs simples de modelos buscables.
+
+2. **Por qué se necesita**
+
+- Consultas `LIKE` de base de datos son limitadas para búsqueda escalable con relevancia ordenada.
+- Motores de búsqueda ofrecen mejores capacidades de indexación y ranking.
+
+3. **Flujo típico**
+
+- Cambios de modelo se indexan.
+- Consultas se ejecutan a través del driver de búsqueda configurado.
+
+Scout proporciona una interfaz Laravel limpia para infraestructura avanzada de búsqueda.
+
+</details>
+
+<details>
+<summary>155. ¿Qué motores de búsqueda puede usar Laravel Scout?</summary>
+
+#### Laravel
+
+Laravel Scout soporta múltiples backends de búsqueda mediante drivers.
+
+1. **Motores usados comúnmente**
+
+- Algolia
+- Meilisearch
+- Typesense
+
+2. **Otras opciones**
+
+- Drivers estilo database/collection para escenarios simples o locales.
+- Drivers de comunidad/personalizados para motores como Elasticsearch/OpenSearch.
+
+3. **Criterios de selección**
+
+- Requisitos de calidad de relevancia.
+- Restricciones de hosting/operación.
+- Costo, latencia y volumen de datos.
+
+La abstracción de Scout permite cambiar o evolucionar estrategia de backend de búsqueda con menos fricción en la capa de aplicación.
+
+</details>
+
+<details>
+<summary>156. ¿Qué es Laravel Cashier?</summary>
+
+#### Laravel
+
+Laravel Cashier es un paquete de facturación por suscripción que simplifica flujos de pagos recurrentes.
+
+1. **Propósito principal**
+
+- Gestionar planes, suscripciones, pruebas, cupones, facturas y lógica del ciclo de vida de facturación.
+
+2. **Por qué es útil**
+
+- Encapsula patrones comunes de facturación SaaS.
+- Reduce boilerplate de integración personalizada.
+
+3. **Escenarios típicos**
+
+- Productos SaaS por suscripción.
+- Implementaciones de facturación por consumo o por niveles.
+
+Cashier acelera desarrollo de suscripciones y pagos en productos basados en Laravel.
+
+</details>
+
+<details>
+<summary>157. ¿Qué es Laravel Socialite?</summary>
+
+#### Laravel
+
+Laravel Socialite es el paquete OAuth de autenticación de Laravel para proveedores de login social.
+
+1. **Qué proporciona**
+
+- Helpers para flujo de redirección/login OAuth.
+- Recuperación de datos de identidad del usuario del proveedor.
+
+2. **Proveedores típicos**
+
+- Google, GitHub, Facebook y otros (según driver).
+
+3. **Por qué los equipos lo usan**
+
+- Implementación más rápida de funcionalidades “Login with ...”.
+- API consistente entre distintos proveedores.
+
+Socialite simplifica integración de login OAuth de terceros en apps Laravel.
+
+</details>
+
+<details>
+<summary>158. ¿Qué es Laravel Pint?</summary>
+
+#### Laravel
+
+Laravel Pint es el formateador opinionated de estilo de código PHP de Laravel, construido sobre PHP-CS-Fixer.
+
+1. **Propósito**
+
+- Formatear código automáticamente con reglas de estilo consistentes.
+
+2. **Por qué importa**
+
+- Diffs y code reviews más limpios.
+- Estilo consistente en todo el equipo con mínimo esfuerzo manual.
+
+3. **Uso típico**
+
+- Ejecutarlo localmente y en CI para forzar cumplimiento de estilo.
+
+Pint mejora consistencia del codebase y eficiencia de desarrollo.
+
+</details>
+
+<details>
+<summary>159. ¿Qué es Laravel Folio?</summary>
+
+#### Laravel
+
+Laravel Folio es un enfoque de routing de páginas basado en archivos para aplicaciones Laravel.
+
+1. **Idea central**
+
+- Mapear archivos directamente a rutas/páginas mediante convenciones de filesystem.
+
+2. **Por qué puede ser útil**
+
+- Menos boilerplate de routing para aplicaciones centradas en páginas.
+- Scaffolding más rápido de estructuras de rutas simples.
+
+3. **Cuándo usarlo**
+
+- Apps con mucho contenido/páginas donde el routing por convención mejora velocidad.
+
+Folio ofrece un estilo alternativo de routing de páginas para equipos que prefieren convenciones basadas en archivos.
+
+</details>
+
+<details>
+<summary>160. ¿Qué es Laravel Precognition?</summary>
+
+#### Laravel
+
+Laravel Precognition permite que apps frontend prevaliden input de formularios contra reglas de validación backend antes del envío completo.
+
+1. **Qué hace**
+
+- Envía requests ligeras con intención de validación.
+- Devuelve feedback de validación temprano mientras el usuario completa el formulario.
+
+2. **Beneficios**
+
+- Mejor UX con feedback de validación más rápido.
+- Reutiliza lógica de validación del servidor como fuente de verdad.
+
+3. **Dónde encaja**
+
+- Formularios complejos en flujos tipo SPA/Inertia/Livewire.
+
+Precognition ayuda a entregar formularios responsivos sin duplicar reglas de validación entre frontend y backend.
+
+</details>
+
+<details>
+<summary>161. ¿Qué son los generadores de PHP y cuándo deberías usarlos?</summary>
+
+#### PHP
+
+Los generadores son funciones que usan `yield` para producir valores de forma perezosa, uno a la vez, en lugar de construir arrays completos en memoria.
+
+1. **Qué resuelven**
+
+- Iteración eficiente en memoria sobre datasets o streams grandes.
+
+2. **Cómo funcionan**
+
+```php
+function numbers(int $max): Generator
+{
+    for ($i = 1; $i <= $max; $i++) {
+        yield $i;
+    }
+}
+```
+
+3. **Cuándo usarlos**
+
+- Procesamiento de archivos grandes.
+- Streaming de registros de BD.
+- Pipelines largos donde materialización completa no es necesaria.
+
+4. **Beneficio**
+
+- Menor uso de memoria con semántica de iteración clara.
+
+Usa generadores cuando el tamaño del dataset sea grande o desconocido y el procesamiento secuencial sea suficiente.
+
+</details>
+
+<details>
+<summary>162. ¿Qué son los atributos de PHP?</summary>
+
+#### PHP
+
+Los atributos de PHP son anotaciones de metadatos nativas con sintaxis `#[...]`.
+
+1. **Propósito**
+
+- Adjuntar metadatos estructurados a clases, métodos, propiedades, parámetros, etc.
+
+2. **Ejemplo**
+
+```php
+#[Deprecated(reason: 'Use NewService')]
+final class LegacyService {}
+```
+
+3. **Por qué son útiles**
+
+- Reemplazan muchos patrones de anotaciones en docblocks con metadatos a nivel de lenguaje.
+- Mejoran tooling, análisis estático e integración con frameworks.
+
+4. **Contexto Laravel**
+
+- Pueden usarse en extensiones personalizadas del framework, patrones de metadatos de validación/routing y diseño de paquetes.
+
+Los atributos ofrecen metadatos explícitos y legibles por máquina directamente en el código.
+
+</details>
+
+<details>
+<summary>163. Explica strict types en PHP.</summary>
+
+#### PHP
+
+Strict types se habilita por archivo usando `declare(strict_types=1);` y aplica comportamiento más estricto para tipos escalares.
+
+1. **Sin strict types**
+
+- PHP puede coercionar escalares (`'10'` a `10`).
+
+2. **Con strict types**
+
+- Valores escalares incompatibles lanzan `TypeError` en lugar de coerción silenciosa.
+
+```php
+declare(strict_types=1);
+
+function add(int $a, int $b): int
+{
+    return $a + $b;
+}
+
+add('2', 3); // TypeError
+```
+
+3. **Por qué es importante**
+
+- Mejor corrección y refactor más seguro.
+- Contratos más fuertes y menos bugs ocultos por conversión.
+
+Strict typing mejora previsibilidad y calidad de código en codebases PHP modernas.
+
+</details>
+
+<details>
+<summary>164. Explica require, include, require_once e include_once.</summary>
+
+#### PHP
+
+Estas construcciones del lenguaje cargan y ejecutan archivos PHP con distinto comportamiento ante fallos y duplicación.
+
+1. **`require`**
+
+- Incluye archivo.
+- Error fatal si archivo falta/no es legible.
+
+2. **`include`**
+
+- Incluye archivo.
+- Warning si falta; el script continúa.
+
+3. **`require_once`**
+
+- Igual que `require`, pero garantiza que el archivo se incluye solo una vez.
+
+4. **`include_once`**
+
+- Igual que `include`, pero solo una vez.
+
+5. **Guía práctica**
+
+- Usa autoload de Composer en lugar de patrones manuales de include en apps modernas.
+- Usa variantes `require` para dependencias críticas.
+
+Las variantes `_once` evitan redeclaraciones accidentales por inclusión duplicada de archivos.
+
+</details>
+
+<details>
+<summary>165. ¿Qué son WeakMaps y qué problemas resuelven?</summary>
+
+#### PHP
+
+`WeakMap` almacena asociaciones con claves-objeto que no impiden que esos objetos sean recolectados por el garbage collector.
+
+1. **Problema que resuelve**
+
+- Adjuntar metadatos/caché a objetos sin provocar memory leaks.
+
+2. **Cómo funciona**
+
+- Las claves deben ser objetos.
+- Cuando el objeto clave se destruye, la entrada desaparece automáticamente.
+
+3. **Casos de uso**
+
+- Cachés de metadatos calculados por objeto.
+- Seguimiento de estado externo para objetos que no controlas.
+
+4. **Por qué mejor que arrays en este caso**
+
+- Arrays estándar con claves/IDs de objeto pueden mantener mapeos obsoletos vivos.
+
+WeakMaps son útiles para datos laterales asociados a objetos de forma segura en memoria.
+
+</details>
+
+<details>
+<summary>166. ¿Qué es el operador spread/splat en PHP?</summary>
+
+#### PHP
+
+El operador spread `...` desempaqueta arrays/iterables en argumentos de función o literales de array.
+
+1. **Desempaquetado de argumentos de función**
+
+```php
+$args = [2, 3];
+$result = sum(...$args);
+```
+
+2. **Desempaquetado de arrays**
+
+```php
+$a = [1, 2];
+$b = [...$a, 3, 4];
+```
+
+3. **Captura variádica (uso “splat” relacionado)**
+
+```php
+function logAll(string ...$messages): void {}
+```
+
+4. **Por qué es útil**
+
+- Código más limpio para composición de argumentos/listas.
+- APIs variádicas más expresivas.
+
+El operador `...` es una herramienta central de PHP moderno para desempaquetado y funciones variádicas.
+
+</details>
+
+<details>
+<summary>167. ¿Qué son los enums en PHP 8.1+?</summary>
+
+#### PHP
+
+Los enums son tipos nativos que representan un conjunto fijo de valores/casos permitidos.
+
+1. **Tipos**
+
+- Unit enums (sin valor escalar).
+- Backed enums (con valor `string` o `int`).
+
+2. **Ejemplo**
+
+```php
+enum OrderStatus: string
+{
+    case Draft = 'draft';
+    case Paid = 'paid';
+    case Shipped = 'shipped';
+}
+```
+
+3. **Por qué usar enums**
+
+- Evitan estados inválidos.
+- Mejoran type safety y legibilidad.
+- Mejor soporte para análisis estático.
+
+Los enums son la forma moderna preferida para modelar estados de dominio finitos en PHP.
+
+</details>
+
+<details>
+<summary>168. ¿Qué son las readonly properties en PHP?</summary>
+
+#### PHP
+
+Las readonly properties pueden asignarse una sola vez (normalmente en el constructor) y luego no pueden modificarse.
+
+1. **Comportamiento**
+
+- Escritura única tras inicialización.
+- Mutación posterior lanza error.
+
+2. **Ejemplo**
+
+```php
+final class UserDto
+{
+    public function __construct(
+        public readonly int $id,
+        public readonly string $email,
+    ) {}
+}
+```
+
+3. **Por qué son útiles**
+
+- Objetos de datos inmutables más seguros.
+- Menos mutaciones accidentales de estado.
+
+Las readonly properties fortalecen inmutabilidad de objetos y claridad de contratos.
+
+</details>
+
+<details>
+<summary>169. ¿Qué son las readonly classes en PHP 8.2+?</summary>
+
+#### PHP
+
+Una `readonly class` hace que todas las propiedades de instancia sean readonly por defecto.
+
+1. **Qué significa**
+
+- Cada propiedad declarada sigue semántica readonly.
+- Buen ajuste para value/transfer objects inmutables.
+
+2. **Ejemplo**
+
+```php
+readonly class Money
+{
+    public function __construct(
+        public int $amount,
+        public string $currency,
+    ) {}
+}
+```
+
+3. **Por qué conviene usarla**
+
+- Fuerza política de inmutabilidad a nivel de clase.
+- Reduce boilerplate frente a declarar cada propiedad como readonly por separado.
+
+Las readonly classes hacen la intención de inmutabilidad explícita y verificable.
+
+</details>
+
+<details>
+<summary>170. ¿Qué son los intersection types y union types?</summary>
+
+#### PHP
+
+Union e intersection types expresan contratos de tipos más ricos.
+
+1. **Union type (`A|B`)**
+
+- El valor puede ser uno de los tipos listados.
+
+2. **Intersection type (`A&B`)**
+
+- El valor debe cumplir todos los tipos listados simultáneamente.
+
+3. **Ejemplos**
+
+```php
+function formatId(int|string $id): string { return (string) $id; }
+
+function store(Cacheable&Jsonable $entity): void {}
+```
+
+4. **Por qué son útiles**
+
+- Contratos API más fuertes.
+- Mejor análisis estático y refactor más seguro.
+
+Union = alternativas flexibles; intersection = capacidades combinadas.
+
+</details>
+
+<details>
+<summary>171. ¿Qué son las clases anónimas?</summary>
+
+#### PHP
+
+Las clases anónimas son instancias de clase creadas inline sin una declaración de clase con nombre.
+
+1. **Ejemplo**
+
+```php
+$logger = new class {
+    public function info(string $message): void {}
+};
+```
+
+2. **Cuándo son útiles**
+
+- Implementaciones pequeñas de un solo uso.
+- Test doubles/stubs locales.
+- Comportamiento tipo estrategia en línea.
+
+3. **Tradeoff**
+
+- Convenientes para alcance local.
+- Las clases con nombre son mejores para lógica reutilizable o compleja.
+
+Las clases anónimas ayudan a definiciones de objetos concisas y localizadas.
+
+</details>
+
+<details>
+<summary>172. ¿Qué son los first-class callables en PHP?</summary>
+
+#### PHP
+
+La sintaxis first-class callable (`...`) crea objetos callable desde funciones/métodos de forma concisa y type-safe.
+
+1. **Ejemplo**
+
+```php
+$trimmer = trim(...);
+$callable = $service->process(...);
+```
+
+2. **Por qué son útiles**
+
+- Más limpios que callables tipo string/array.
+- Mejor análisis estático y refactor más seguro.
+
+3. **Casos de uso**
+
+- Pipelines funcionales (`array_map`, colecciones).
+- Patrones de inyección de callbacks.
+
+Los first-class callables mejoran legibilidad y confiabilidad del código orientado a callbacks.
+
+</details>
+
+<details>
+<summary>173. ¿Qué son los fibers en PHP?</summary>
+
+#### PHP
+
+Los fibers son primitivas de concurrencia de bajo nivel introducidas en PHP 8.1 para multitarea cooperativa.
+
+1. **Qué habilitan**
+
+- Suspender/reanudar contexto de ejecución manualmente.
+- Construir frameworks async/abstracciones de event-loop.
+
+2. **Punto importante**
+
+- Los fibers no son hilos paralelos.
+- Requieren orquestación por runtime/biblioteca.
+
+3. **Dónde son relevantes**
+
+- Bibliotecas async y runtimes de alta concurrencia.
+- Abstracciones avanzadas de I/O no bloqueante.
+
+Los fibers proporcionan bloques base para modelos async estructurados en ecosistemas PHP.
+
+</details>
+
+<details>
+<summary>174. ¿Qué son los backed enums?</summary>
+
+#### PHP
+
+Los backed enums son enums cuyos casos se mapean a valores escalares (`string` o `int`).
+
+1. **Ejemplo**
+
+```php
+enum Status: string
+{
+    case Active = 'active';
+    case Disabled = 'disabled';
+}
+```
+
+2. **Por qué importan**
+
+- Persistencia sencilla en payloads DB/API.
+- Representación de dominio type-safe con mapeo escalar estable.
+
+3. **Métodos útiles**
+
+- `Status::from($value)` (lanza excepción si es inválido)
+- `Status::tryFrom($value)` (devuelve `null` si es inválido)
+
+Los backed enums son ideales para estados finitos que deben serializarse limpiamente.
+
+</details>
+
+<details>
+<summary>175. ¿Cuáles son las diferencias entre interfaces, clases abstractas y traits?</summary>
+
+#### PHP
+
+Estas construcciones sirven para distintos propósitos de reutilización/abstracción.
+
+1. **Interface**
+
+- Define solo contrato (firmas de métodos/constantes).
+- Sin estado de implementación.
+- Soporta implementación de múltiples interfaces.
+
+2. **Abstract class**
+
+- Implementación parcial + estado/comportamiento compartido.
+- Puede incluir métodos abstractos y concretos.
+- Restricción de herencia única.
+
+3. **Trait**
+
+- Unidad de reutilización horizontal de código mezclada en clases.
+- Comparte métodos/propiedades entre jerarquías de clases no relacionadas.
+
+4. **Regla de selección**
+
+- Interface para contratos de capacidad.
+- Abstract class para comportamiento base compartido.
+- Trait para pequeños bloques de comportamiento reutilizable.
+
+Elegir correctamente mantiene la arquitectura explícita y mantenible.
+
+</details>
+
+<details>
+<summary>176. ¿Qué son los principios SOLID y cómo se aplican a Laravel?</summary>
+
+#### Laravel
+
+Los principios SOLID son guías de diseño OOP que mejoran mantenibilidad y extensibilidad.
+
+1. **S: Single Responsibility**
+
+- Mantén controladores ligeros; mueve reglas de negocio a servicios/actions.
+
+2. **O: Open/Closed**
+
+- Extiende comportamiento vía interfaces, events, estrategias, policies.
+
+3. **L: Liskov Substitution**
+
+- Implementa contratos consistentemente para que alternativas sigan siendo intercambiables.
+
+4. **I: Interface Segregation**
+
+- Prefiere interfaces enfocadas sobre “god interfaces” amplias.
+
+5. **D: Dependency Inversion**
+
+- Depende de contratos; resuelve implementaciones vía service container.
+
+En Laravel, SOLID se aplica mediante DI, contracts, capas de servicios y límites arquitectónicos modulares.
+
+</details>
+
+<details>
+<summary>177. ¿Qué patrones de diseño se usan comúnmente en aplicaciones Laravel?</summary>
+
+#### Laravel
+
+Las apps Laravel suelen combinar patrones del framework con patrones clásicos de diseño de software.
+
+1. **Patrones comunes**
+
+- Repository
+- Factory
+- Strategy
+- Observer
+- Decorator
+- Adapter
+- Command (jobs/commands)
+
+2. **Ejemplos de patrones nativos de Laravel**
+
+- Service container + dependency inversion.
+- Pub-sub de event/listener.
+- Pipeline de middleware.
+
+3. **Por qué importan los patrones**
+
+- Separación clara de responsabilidades.
+- Testing más fácil y sustitución de implementaciones.
+- Mejor escalabilidad a largo plazo del codebase.
+
+El uso de patrones debe resolver complejidad real, no agregar abstracción innecesaria.
+
+</details>
+
+<details>
+<summary>178. Explica los patrones Repository, Factory, Strategy y Observer.</summary>
+
+#### PHP
+
+Estos patrones resuelven distintos problemas arquitectónicos.
+
+1. **Repository**
+
+- Abstrae acceso a datos detrás de interfaces.
+- Desacopla lógica de negocio de detalles ORM/consultas.
+
+2. **Factory**
+
+- Centraliza lógica de creación de objetos.
+- Útil cuando el proceso de creación es complejo o guiado por variantes.
+
+3. **Strategy**
+
+- Encapsula algoritmos/comportamientos intercambiables detrás de una interfaz común.
+- Permite seleccionar implementación en runtime.
+
+4. **Observer**
+
+- Patrón de notificación one-to-many basado en eventos.
+- En Laravel: events/listeners y model observers.
+
+Cada patrón debe aplicarse donde reduzca acoplamiento y aclare responsabilidades.
+
+</details>
+
+<details>
+<summary>179. ¿Qué es PSR y qué estándares PSR son más relevantes para developers Laravel?</summary>
+
+#### PHP
+
+PSR (PHP Standards Recommendations) son estándares de interoperabilidad de PHP-FIG.
+
+1. **Por qué PSR importa**
+
+- Convenciones consistentes entre paquetes/frameworks.
+- Mejor interoperabilidad en ecosistema Composer.
+
+2. **PSR más relevantes para developers Laravel**
+
+- **PSR-1/PSR-12**: estilo de código/estándar básico de codificación.
+- **PSR-4**: estándar de autoloading.
+- **PSR-3**: interfaz de logger.
+- **PSR-7**: interfaces de mensajes HTTP (contextos de integración del ecosistema).
+- **PSR-11**: conceptos de interfaz de contenedor.
+
+3. **Impacto práctico**
+
+- Uso más fácil de librerías third-party y límites arquitectónicos más limpios.
+
+La alfabetización PSR ayuda a developers Laravel a construir código más portable y amigable con el ecosistema.
+
+</details>
+
+<details>
+<summary>180. ¿Qué es el autoloading de Composer y cómo funciona PSR-4?</summary>
+
+#### PHP
+
+El autoloading de Composer mapea nombres de clases a archivos para que las clases se carguen automáticamente sin includes manuales.
+
+1. **Rol del autoload de Composer**
+
+- Genera autoloader optimizado a partir de mapeos de paquetes/aplicación.
+- Punto de entrada estándar para carga de clases en apps PHP modernas.
+
+2. **Principio PSR-4**
+
+- Un prefijo de namespace se mapea a un directorio base.
+- Segmentos del namespace se mapean a subdirectorios.
+- El nombre de clase se mapea al nombre de archivo.
+
+3. **Concepto de mapeo de ejemplo**
+
+- `App\` -> `app/`
+- `App\Services\BillingService` -> `app/Services/BillingService.php`
+
+4. **Por qué es importante**
+
+- Estructura predecible.
+- Sin cadenas manuales de `require`.
+- Mejor tooling e interoperabilidad de paquetes.
+
+Composer + PSR-4 es la base de carga de clases en Laravel y proyectos PHP modernos.
+
+</details>
